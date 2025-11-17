@@ -1,4 +1,4 @@
-FROM maven:4.0.0-openjdk-17 AS builder
+FROM maven:4.0.0-rc-5-eclipse-temurin-17-noble AS builder
 
 WORKDIR /app
 
@@ -9,7 +9,7 @@ RUN cd /app && mvn install -DskipTests
 
 #----
 
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17.0.17_10-jre-noble
 
 USER root
 
@@ -68,5 +68,5 @@ COPY --from=builder /app/target/*.jar /app/dist/
 
 EXPOSE 8080
 
-ENTRYPOINT ["/tini", "--"]
+ENTRYPOINT ["/tini", "--"]g
 CMD ["java", "-jar", "/app/dist/bioplanta-0.0.1-SNAPSHOT.jar"]
