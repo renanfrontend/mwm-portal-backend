@@ -1,4 +1,15 @@
-FROM docker.io/library/python:3.13-slim
+FROM maven:4.0.0-openjdk-17 AS builder
+
+WORKDIR /app
+
+COPY . /app
+
+RUN cd /app && mvn install -DskipTests
+
+
+#----
+
+FROM openjdk:17-jre-slim
 
 USER root
 
@@ -51,12 +62,11 @@ RUN cd /tmp && mkdir -p /etc/apt /var/cache/apt/archives/ /var/cache/apt/archive
     && rm -fr /var/lib/apt/lists/* /var/cache/apt/archives/* /usr/local/src/* /tmp/* || true \
     && rm -fr /etc/ld.so.cache || true && ldconfig -v || true
 
-ADD https://github.com/krallin/tini/releases/download/v0.19.0/tini /tini
-RUN chmod +x /tini && mkdir -p /app
+WORKDIR /app/dist
 
-ADD ./target/bioplanta-0.0.1-SNAPSHOT.jar /app/bioplanta-0.0.1-SNAPSHOT.jar
-WORKDIR /app
+COPY --from=builder /app/target/*.jar /app/dist/
+
+EXPOSE 8080
 
 ENTRYPOINT ["/tini", "--"]
-CMD ["java", "-jar", "/app/bioplanta-0.0.1-SNAPSHOT.jar"]
- 
+CMD ["java", "-jar", "/app/dist/bioplanta-0.0.1-SNAPSHOT.jar"]
