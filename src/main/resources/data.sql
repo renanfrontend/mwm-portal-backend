@@ -40,3 +40,47 @@ insert into faturamento_item (id, name, faturamento, label) VALUES (9, 'Setembro
 insert into faturamento_item (id, name, faturamento, label) VALUES (10, 'Outubro', 0, '0.0');
 insert into faturamento_item (id, name, faturamento, label) VALUES (11, 'Novembro', 0, '0.0');
 insert into faturamento_item (id, name, faturamento, label) VALUES (12, 'Dezembro', 0, '0.0');
+
+insert into metric(id, icon, label, valor, trend, unit) VALUES (1, 'density_medium', 'Densidade dos dejetos', '1014', 'up', NULL);
+insert into metric(id, icon, label, valor, trend, unit) VALUES (2, 'water_drop', 'Volume recebido', '34.6', 'up', 'm³');
+insert into metric(id, icon, label, valor, trend, unit) VALUES (3, 'timer', 'TMO diário', '16:00:00', 'up', NULL);
+insert into metric(id, icon, label, valor, trend, unit) VALUES (4, 'power_settings_new', 'Status operacional', 'Operando', 'up', NULL);
+
+insert into stock_item(id, label, valor, capacity, unit, color) VALUES (1, 'Fertilizantes', 74480, 78400, 't', 'is-link');
+insert into stock_item(id, label, valor, capacity, unit, color) VALUES (2, 'Bio Metano', 65000, 100000, 'm³', 'is-success');
+insert into stock_item(id, label, valor, capacity, unit, color) VALUES (3, 'CO₂', 38000, 100000, 'm³', 'is-warning');
+
+insert into analise_cooperado(id, name, valor, color) VALUES (1, 'Ademir E.', 2.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (2, 'Ademir M.', 2.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (3, 'Ademir R.', 3.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (4, 'André S.', -1.5, '#ef4444');
+insert into analise_cooperado(id, name, valor, color) VALUES (5, 'Arsênio W.', 3.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (6, 'Carlos P.', 2.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (7, 'Clarindo M.', -0.5, '#ef4444');
+insert into analise_cooperado(id, name, valor, color) VALUES (8, 'Delcio R.', 2.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (9, 'Divino', 1.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (10, 'Ederson D.', 3.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (11, 'Egon P.', 1.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (12, 'Fazenda E.', 0.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (13, 'Francisco', -1.5, '#ef4444');
+insert into analise_cooperado(id, name, valor, color) VALUES (14, 'Gelson R.', 3.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (15, 'Gilberto', 1.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (16, 'Gilmar P.', -0.5, '#ef4444');
+insert into analise_cooperado(id, name, valor, color) VALUES (17, 'Guido D.', 1.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (18, 'Jacir M.', 5.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (19, 'Jose F.', 1.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (20, 'Ladir N.', 3.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (21, 'Ladir R.', 3.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (22, 'Laurindo M.', 3.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (23, 'Marcelo', 3.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (24, 'Marcos C.', 3.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (25, 'Marcos S.', 7.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (26, 'Marina K.', 2.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (27, 'Marines C.', 3.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (28, 'Marlise K.', 2.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (29, 'Nelson B.', 4.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (30, 'Oswaldo G.', 4.5, '#334bff');
+insert into analise_cooperado(id, name, valor, color) VALUES (31, 'Renato I.', 1.5, '#334bff');
+
+insert into qualidade_dejetos_item(id, data_coleta, cooperado, placa, ph, densidade, entrega_referencia) VALUES (1, '13/10/2025', 'Ademir Engelsing', 'ABC-1D23', 7.2, '1025', 'ENT-54321');
+insert into qualidade_dejetos_item(id, data_coleta, cooperado, placa, ph, densidade, entrega_referencia) VALUES (2, '13/10/2025', 'Ademir Marchioro', 'DEF-4567', 7.5, 'N/A', 'ENT-54322');
