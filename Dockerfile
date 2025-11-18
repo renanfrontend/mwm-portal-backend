@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY . /app
 
-RUN cd /app && mvn install -DskipTests
+RUN mvn install -DskipTests
 
 
 #----
@@ -68,5 +68,5 @@ COPY --from=builder /app/target/*.jar /app/dist/
 
 EXPOSE 8080
 
-ENTRYPOINT ["/tini", "--"]g
+
 CMD ["java", "-jar", "/app/dist/bioplanta-0.0.1-SNAPSHOT.jar"]
