@@ -1,0 +1,24 @@
+package com.mwm.bioplanta.repository;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.mwm.bioplanta.model.BioTransportadora;
+
+public interface BioTransportadoraRepository extends JpaRepository<BioTransportadora, Long> {
+
+    BioTransportadora findByNomeFantasia(String nomeFantasia);
+
+    BioTransportadora findByCnpj(String cnpj);
+
+    @Query("SELECT t FROM BioTransportadora t WHERE " +
+            "LOWER(t.nomeFantasia) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(t.razaoSocial) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "t.cnpj LIKE CONCAT('%', :search, '%')")
+    Page<BioTransportadora> buscar(@Param("search") String search, Pageable pageable);
+
+    Page<BioTransportadora> findAll(Pageable pageable);
+}

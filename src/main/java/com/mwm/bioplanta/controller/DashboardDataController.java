@@ -14,7 +14,7 @@ import com.mwm.bioplanta.dto.DashboardDataResponseDTO;
 import com.mwm.bioplanta.dto.VolumePorVeiculoResponseDTO;
 import com.mwm.bioplanta.model.AbastecimentoReportItem;
 import com.mwm.bioplanta.repository.AbastecimentoReportItemRepository;
-import com.mwm.bioplanta.repository.AnaliseCooperadoRepository;
+import com.mwm.bioplanta.repository.AnaliseProdutoRepository;
 import com.mwm.bioplanta.repository.MetricRepository;
 import com.mwm.bioplanta.repository.StockItemRepository;
 
@@ -29,7 +29,7 @@ public class DashboardDataController {
 	private StockItemRepository stockItemRepository;
 	
 	@Autowired
-	private AnaliseCooperadoRepository analiseCooperadoRepository;
+	private AnaliseProdutoRepository analiseProdutoRepository;
 	
 	@Autowired
 	private AbastecimentoReportItemRepository abastecimentoReportItemRepository;
@@ -39,7 +39,7 @@ public class DashboardDataController {
 		DashboardDataResponseDTO dash = new DashboardDataResponseDTO();
 		dash.setMetrics(metricRepository.findAll());
 		dash.setStock(stockItemRepository.findAll());
-		dash.setCooperativeAnalysis(analiseCooperadoRepository.findAll());
+		dash.setCooperativeAnalysis(analiseProdutoRepository.findAll());
 		/*
 		Map<String, List<AbastecimentoReportItem>> agrupado = new HashMap<>();
 		List<AbastecimentoReportItem> abasts = abastecimentoReportItemRepository.findAll();

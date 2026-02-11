@@ -50,37 +50,77 @@ insert into stock_item(id, label, valor, capacity, unit, color) VALUES (1, 'Fert
 insert into stock_item(id, label, valor, capacity, unit, color) VALUES (2, 'Bio Metano', 65000, 100000, 'm³', 'is-success');
 insert into stock_item(id, label, valor, capacity, unit, color) VALUES (3, 'CO₂', 38000, 100000, 'm³', 'is-warning');
 
-insert into analise_cooperado(id, name, valor, color) VALUES (1, 'Ademir E.', 2.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (2, 'Ademir M.', 2.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (3, 'Ademir R.', 3.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (4, 'André S.', -1.5, '#ef4444');
-insert into analise_cooperado(id, name, valor, color) VALUES (5, 'Arsênio W.', 3.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (6, 'Carlos P.', 2.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (7, 'Clarindo M.', -0.5, '#ef4444');
-insert into analise_cooperado(id, name, valor, color) VALUES (8, 'Delcio R.', 2.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (9, 'Divino', 1.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (10, 'Ederson D.', 3.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (11, 'Egon P.', 1.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (12, 'Fazenda E.', 0.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (13, 'Francisco', -1.5, '#ef4444');
-insert into analise_cooperado(id, name, valor, color) VALUES (14, 'Gelson R.', 3.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (15, 'Gilberto', 1.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (16, 'Gilmar P.', -0.5, '#ef4444');
-insert into analise_cooperado(id, name, valor, color) VALUES (17, 'Guido D.', 1.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (18, 'Jacir M.', 5.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (19, 'Jose F.', 1.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (20, 'Ladir N.', 3.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (21, 'Ladir R.', 3.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (22, 'Laurindo M.', 3.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (23, 'Marcelo', 3.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (24, 'Marcos C.', 3.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (25, 'Marcos S.', 7.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (26, 'Marina K.', 2.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (27, 'Marines C.', 3.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (28, 'Marlise K.', 2.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (29, 'Nelson B.', 4.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (30, 'Oswaldo G.', 4.5, '#334bff');
-insert into analise_cooperado(id, name, valor, color) VALUES (31, 'Renato I.', 1.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (1, 'Ademir E.', 2.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (2, 'Ademir M.', 2.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (3, 'Ademir R.', 3.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (4, 'André S.', -1.5, '#ef4444');
+insert into analise_produtor(id, name, valor, color) VALUES (5, 'Arsênio W.', 3.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (6, 'Carlos P.', 2.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (7, 'Clarindo M.', -0.5, '#ef4444');
+insert into analise_produtor(id, name, valor, color) VALUES (8, 'Delcio R.', 2.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (9, 'Divino', 1.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (10, 'Ederson D.', 3.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (11, 'Egon P.', 1.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (12, 'Fazenda E.', 0.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (13, 'Francisco', -1.5, '#ef4444');
+insert into analise_produtor(id, name, valor, color) VALUES (14, 'Gelson R.', 3.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (15, 'Gilberto', 1.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (16, 'Gilmar P.', -0.5, '#ef4444');
+insert into analise_produtor(id, name, valor, color) VALUES (17, 'Guido D.', 1.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (18, 'Jacir M.', 5.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (19, 'Jose F.', 1.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (20, 'Ladir N.', 3.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (21, 'Ladir R.', 3.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (22, 'Laurindo M.', 3.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (23, 'Marcelo', 3.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (24, 'Marcos C.', 3.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (25, 'Marcos S.', 7.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (26, 'Marina K.', 2.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (27, 'Marines C.', 3.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (28, 'Marlise K.', 2.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (29, 'Nelson B.', 4.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (30, 'Oswaldo G.', 4.5, '#334bff');
+insert into analise_produtor(id, name, valor, color) VALUES (31, 'Renato I.', 1.5, '#334bff');
 
 insert into qualidade_dejetos_item(id, data_coleta, cooperado, placa, ph, densidade, entrega_referencia) VALUES (1, '13/10/2025', 'Ademir Engelsing', 'ABC-1D23', 7.2, '1025', 'ENT-54321');
 insert into qualidade_dejetos_item(id, data_coleta, cooperado, placa, ph, densidade, entrega_referencia) VALUES (2, '13/10/2025', 'Ademir Marchioro', 'DEF-4567', 7.5, 'N/A', 'ENT-54322');
+
+-- Test data for bio_transportadora
+INSERT INTO bio_transportadora (id, nome_fantasia, razao_social, cnpj, telefone, email, cidade, uf, endereco, categoria, contato_principal_nome, contato_principal_telefone, contato_principal_email, contato_comercial_nome, contato_comercial_telefone, contato_comercial_email, contato_financeiro_nome, contato_financeiro_telefone, contato_financeiro_email, contato_juridico_nome, contato_juridico_telefone, contato_juridico_email, criado_em, atualizado_em)
+VALUES (1, 'Primato', 'Primato Transportes Ltda', '12.345.678/0001-00', '45999470460', 'contato@primato.com', 'Toledo', 'PR', 'Rua Exemplo 123', 'Logística', 'João Silva', '45999470460', 'joao@primato.com', 'Maria Santos', '45999470461', 'maria@primato.com', 'Pedro Oliveira', '45999470462', 'pedro@primato.com', 'Ana Costa', '45999470463', 'ana@primato.com', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO bio_transportadora (id, nome_fantasia, razao_social, cnpj, telefone, email, cidade, uf, endereco, categoria, contato_principal_nome, contato_principal_telefone, contato_principal_email, contato_comercial_nome, contato_comercial_telefone, contato_comercial_email, contato_financeiro_nome, contato_financeiro_telefone, contato_financeiro_email, contato_juridico_nome, contato_juridico_telefone, contato_juridico_email, criado_em, atualizado_em)
+VALUES (2, 'Agrocampo', 'Agrocampo Transportes Ltda', '98.765.432/0001-00', '45999470470', 'contato@agrocampo.com', 'Cascavel', 'PR', 'Av. Central 456', 'Agrícola', 'Carlos Souza', '45999470471', 'carlos@agrocampo.com', 'Fernanda Lima', '45999470472', 'fernanda@agrocampo.com', 'Roberto Alves', '45999470473', 'roberto@agrocampo.com', 'Luciana Pereira', '45999470474', 'luciana@agrocampo.com', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO bio_transportadora (id, nome_fantasia, razao_social, cnpj, telefone, email, cidade, uf, endereco, categoria, contato_principal_nome, contato_principal_telefone, contato_principal_email, contato_comercial_nome, contato_comercial_telefone, contato_comercial_email, contato_financeiro_nome, contato_financeiro_telefone, contato_financeiro_email, contato_juridico_nome, contato_juridico_telefone, contato_juridico_email, criado_em, atualizado_em)
+VALUES (3, 'MWM', 'MWM Transportes Ltda', '11.222.333/0001-00', '45999470480', 'contato@mwm.com', 'Marechal Cândido Rondon', 'PR', 'Rua Industrial 789', 'Geral', 'José Oliveira', '45999470481', 'jose@mwm.com', 'Patrícia Rocha', '45999470482', 'patricia@mwm.com', 'Marcos Santos', '45999470483', 'marcos@mwm.com', 'Cristina Lima', '45999470484', 'cristina@mwm.com', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO bio_transportadora (id, nome_fantasia, razao_social, cnpj, telefone, email, cidade, uf, endereco, categoria, contato_principal_nome, contato_principal_telefone, contato_principal_email, contato_comercial_nome, contato_comercial_telefone, contato_comercial_email, contato_financeiro_nome, contato_financeiro_telefone, contato_financeiro_email, contato_juridico_nome, contato_juridico_telefone, contato_juridico_email, criado_em, atualizado_em)
+VALUES (4, 'Tupy', 'Tupy Transportes Ltda', '44.555.666/0001-00', '45999470490', 'contato@tupy.com', 'Palotina', 'PR', 'Estrada Rural 101', 'Especializada', 'Antônio Ferreira', '45999470491', 'antonio@tupy.com', 'Beatriz Gomes', '45999470492', 'beatriz@tupy.com', 'Eduardo Silva', '45999470493', 'eduardo@tupy.com', 'Gabriela Torres', '45999470494', 'gabriela@tupy.com', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Test data for bio_planta (assuming one default)
+INSERT INTO bio_planta (id, nome, codigo_planta, localizacao, criado_em, atualizado_em)
+VALUES (1, 'Planta Toledo', '001', 'TOLEDO', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Test data for bio_veiculo_transportadora
+INSERT INTO bio_veiculo_transportadora (id, transportadora_id, tipo, capacidade, placa, tipo_abastecimento, tag, criado_em, atualizado_em)
+VALUES (1, 1, 'Caminhão de Dejetos', '14 ton', 'ABC-1234', 'Diesel', 'TAG12345678901234', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO bio_veiculo_transportadora (id, transportadora_id, tipo, capacidade, placa, tipo_abastecimento, tag, criado_em, atualizado_em)
+VALUES (2, 2, 'Caminhão de Ração', '12 ton', 'DEF-5678', 'Diesel', 'TAG56789012345678', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO bio_veiculo_transportadora (id, transportadora_id, tipo, capacidade, placa, tipo_abastecimento, tag, criado_em, atualizado_em)
+VALUES (3, 3, 'Empilhadeira', '5 ton', 'GHI-9012', 'Elétrico', 'TAG90123456789012', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+-- Test data for bio_filiada (linking to transportadoras)
+INSERT INTO bio_filiada (id, fk_bio_planta_id, nome, criado_em, atualizado_em)
+VALUES (1, 1, 'Primato', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO bio_filiada (id, fk_bio_planta_id, nome, criado_em, atualizado_em)
+VALUES (2, 1, 'Agrocampo', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO bio_filiada (id, fk_bio_planta_id, nome, criado_em, atualizado_em)
+VALUES (3, 1, 'MWM', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
+INSERT INTO bio_filiada (id, fk_bio_planta_id, nome, criado_em, atualizado_em)
+VALUES (4, 1, 'Tupy', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);

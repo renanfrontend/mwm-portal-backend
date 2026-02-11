@@ -51,8 +51,10 @@ public class CooperadoItem {
 	private String municipio;
 	@Schema(description = "Localização", example = "https://www.google.com/maps/dir/-24.7229319,-53.8641137", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String localizacao;
+    @Column(precision = 18, scale = 10)
 	@Schema(description = "Latitude", example = "-24,7229319", requiredMode = Schema.RequiredMode.REQUIRED)
 	private BigDecimal latitude;//TODO definir limite
+	@Column(precision = 18, scale = 10)
 	@Schema(description = "Longitude", example = "-53,8641137", requiredMode = Schema.RequiredMode.REQUIRED)
 	private BigDecimal longitude;//TODO definir limite
 	@Schema(description = "Técnico", example = "Daniel", requiredMode = Schema.RequiredMode.REQUIRED)

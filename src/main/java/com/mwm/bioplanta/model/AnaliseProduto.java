@@ -17,7 +17,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AnaliseCooperado {
+public class AnaliseProduto {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
