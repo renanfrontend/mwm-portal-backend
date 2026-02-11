@@ -59,17 +59,11 @@ public class BioTransportadoraController {
             TransportadoraResponseDTO response = bioTransportadoraService.criar(dto);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            e.printStackTrace();
             String mensagem = e.getMessage();
             if (mensagem != null && mensagem.toLowerCase().contains("cnpj")) {
                 return ResponseEntity.badRequest().body("cnpj ja esta cadastrado.");
             }
-            // Tenta pegar a causa raiz se for um erro de banco
-            Throwable cause = e.getCause();
-            if (cause != null) {
-                return ResponseEntity.badRequest().body("Erro ao criar transportadora: " + cause.getMessage());
-            }
-            return ResponseEntity.badRequest().body("erro ao criar transportadora: " + mensagem);
+            return ResponseEntity.badRequest().body("erro ao criar transportadora");
         }
     }
 
@@ -112,7 +106,7 @@ public class BioTransportadoraController {
 
     @PutMapping("/{transportadoraId}/veiculos/{veiculoId}")
     @Operation(summary = "Editar veículo de uma transportadora")
-    public ResponseEntity<?> editarVeiculo(
+    public ResponseEntity<VeiculoDTO> editarVeiculo(
             @PathVariable Long transportadoraId,
             @PathVariable Long veiculoId,
             @RequestBody VeiculoDTO veiculoDTO) {
@@ -120,8 +114,7 @@ public class BioTransportadoraController {
             VeiculoDTO response = bioTransportadoraService.editarVeiculo(transportadoraId, veiculoId, veiculoDTO);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 

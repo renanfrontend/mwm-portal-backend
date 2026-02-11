@@ -151,14 +151,23 @@ public class BioTransportadoraService {
         BioTransportadora transportadora = bioTransportadoraRepository.findById(transportadoraId)
                 .orElseThrow(() -> new RuntimeException("Transportadora não encontrada com ID: " + transportadoraId));
 
+        // Validar tag obrigatória para Biometano
+        if ("Biometano".equals(veiculoDTO.getTipoAbastecimento())) {
+            if (veiculoDTO.getTag() == null || veiculoDTO.getTag().trim().isEmpty()) {
+                throw new RuntimeException("TAG é obrigatória quando o tipo de abastecimento é Biometano");
+            }
+            if (veiculoDTO.getTag().length() != 16) {
+                throw new RuntimeException("TAG deve ter exatamente 16 caracteres");
+            }
+        }
+
         BioVeiculoTransportadora veiculo = new BioVeiculoTransportadora();
         veiculo.setBioTransportadora(transportadora);
         veiculo.setTipo(veiculoDTO.getTipo());
         veiculo.setCapacidade(veiculoDTO.getCapacidade());
         veiculo.setPlaca(veiculoDTO.getPlaca());
         veiculo.setTipoAbastecimento(veiculoDTO.getTipoAbastecimento());
-        veiculo.setStatus("Ativo");
-
+        veiculo.setTag(veiculoDTO.getTag());
         veiculo.setCriadoEm(LocalDateTime.now());
         veiculo.setAtualizadoEm(LocalDateTime.now());
 
@@ -183,15 +192,22 @@ public class BioTransportadoraService {
             throw new RuntimeException("Veículo não pertence a esta transportadora");
         }
 
+        // Validar tag obrigatória para Biometano
+        if ("Biometano".equals(veiculoDTO.getTipoAbastecimento())) {
+            if (veiculoDTO.getTag() == null || veiculoDTO.getTag().trim().isEmpty()) {
+                throw new RuntimeException("TAG é obrigatória quando o tipo de abastecimento é Biometano");
+            }
+            if (veiculoDTO.getTag().length() != 16) {
+                throw new RuntimeException("TAG deve ter exatamente 16 caracteres");
+            }
+        }
+
         veiculo.setTipo(veiculoDTO.getTipo());
         veiculo.setCapacidade(veiculoDTO.getCapacidade());
         veiculo.setPlaca(veiculoDTO.getPlaca());
         veiculo.setTipoAbastecimento(veiculoDTO.getTipoAbastecimento());
+        veiculo.setTag(veiculoDTO.getTag());
         veiculo.setAtualizadoEm(LocalDateTime.now());
-        // Garante que o status esteja presente ao atualizar, caso o registro antigo não tivesse
-        if (veiculo.getStatus() == null) {
-            veiculo.setStatus("Ativo");
-        }
 
         veiculo = bioVeiculoTransportadoraRepository.save(veiculo);
 
@@ -236,9 +252,36 @@ public class BioTransportadoraService {
             transportadora.setContatoPrincipalTelefone(dto.getContatoPrincipal().getTelefone());
             transportadora.setContatoPrincipalEmail(dto.getContatoPrincipal().getEmail());
         }
+
+        if (dto.getContatoComercial() != null) {
+            transportadora.setContatoComercialNome(dto.getContatoComercial().getNome());
+            transportadora.setContatoComercialTelefone(dto.getContatoComercial().getTelefone());
+            transportadora.setContatoComercialEmail(dto.getContatoComercial().getEmail());
+        }
+
+        if (dto.getContatoFinanceiro() != null) {
+            transportadora.setContatoFinanceiroNome(dto.getContatoFinanceiro().getNome());
+            transportadora.setContatoFinanceiroTelefone(dto.getContatoFinanceiro().getTelefone());
+            transportadora.setContatoFinanceiroEmail(dto.getContatoFinanceiro().getEmail());
+        }
+
+        if (dto.getContatoJuridico() != null) {
+            transportadora.setContatoJuridicoNome(dto.getContatoJuridico().getNome());
+            transportadora.setContatoJuridicoTelefone(dto.getContatoJuridico().getTelefone());
+            transportadora.setContatoJuridicoEmail(dto.getContatoJuridico().getEmail());
+        }
     }
 
     private void salvarVeiculo(BioTransportadora transportadora, VeiculoDTO veiculoDTO) {
+        // Validar tag obrigatória para Biometano
+        if ("Biometano".equals(veiculoDTO.getTipoAbastecimento())) {
+            if (veiculoDTO.getTag() == null || veiculoDTO.getTag().trim().isEmpty()) {
+                throw new RuntimeException("TAG é obrigatória quando o tipo de abastecimento é Biometano");
+            }
+            if (veiculoDTO.getTag().length() != 16) {
+                throw new RuntimeException("TAG deve ter exatamente 16 caracteres");
+            }
+        }
 
         BioVeiculoTransportadora veiculo = new BioVeiculoTransportadora();
         veiculo.setBioTransportadora(transportadora);
@@ -246,8 +289,7 @@ public class BioTransportadoraService {
         veiculo.setCapacidade(veiculoDTO.getCapacidade());
         veiculo.setPlaca(veiculoDTO.getPlaca());
         veiculo.setTipoAbastecimento(veiculoDTO.getTipoAbastecimento());
-        veiculo.setStatus("Ativo");
-
+        veiculo.setTag(veiculoDTO.getTag());
         veiculo.setCriadoEm(LocalDateTime.now());
         veiculo.setAtualizadoEm(LocalDateTime.now());
 
@@ -276,6 +318,30 @@ public class BioTransportadoraService {
                     transportadora.getContatoPrincipalNome(),
                     transportadora.getContatoPrincipalTelefone(),
                     transportadora.getContatoPrincipalEmail()
+            ));
+        }
+
+        if (transportadora.getContatoComercialNome() != null) {
+            dto.setContatoComercial(new ContatoDTO(
+                    transportadora.getContatoComercialNome(),
+                    transportadora.getContatoComercialTelefone(),
+                    transportadora.getContatoComercialEmail()
+            ));
+        }
+
+        if (transportadora.getContatoFinanceiroNome() != null) {
+            dto.setContatoFinanceiro(new ContatoDTO(
+                    transportadora.getContatoFinanceiroNome(),
+                    transportadora.getContatoFinanceiroTelefone(),
+                    transportadora.getContatoFinanceiroEmail()
+            ));
+        }
+
+        if (transportadora.getContatoJuridicoNome() != null) {
+            dto.setContatoJuridico(new ContatoDTO(
+                    transportadora.getContatoJuridicoNome(),
+                    transportadora.getContatoJuridicoTelefone(),
+                    transportadora.getContatoJuridicoEmail()
             ));
         }
 
@@ -310,10 +376,12 @@ public class BioTransportadoraService {
 
     private VeiculoDTO converterVeiculoParaDTO(BioVeiculoTransportadora veiculo) {
         VeiculoDTO dto = new VeiculoDTO();
+        dto.setId(veiculo.getId());
         dto.setTipo(veiculo.getTipo());
         dto.setCapacidade(veiculo.getCapacidade());
         dto.setPlaca(veiculo.getPlaca());
         dto.setTipoAbastecimento(veiculo.getTipoAbastecimento());
+        dto.setTag(veiculo.getTag());
         return dto;
     }
 }

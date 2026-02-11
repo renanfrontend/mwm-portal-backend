@@ -38,12 +38,6 @@ public class TransportadoraResponseDTO {
     @Schema(description = "UF")
     private String uf;
 
-    @Schema(description = "Telefone")
-    private String telefone;
-
-    @Schema(description = "Email")
-    private String email;
-
     @Schema(description = "Telefone comercial")
     private String telefoneComercial;
 

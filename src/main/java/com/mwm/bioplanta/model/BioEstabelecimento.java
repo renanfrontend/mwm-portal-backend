@@ -68,9 +68,8 @@ public class BioEstabelecimento {
     @Schema(description = "Município")
     private String municipio;
 
-     @Column(name = "estado")
-     @Schema(description = "Estado")
-     private String estado;
+    @Schema(description = "Estado")
+    private String estado;
 
     @Schema(description = "CEP")
     private String cep;
@@ -79,15 +78,12 @@ public class BioEstabelecimento {
     @Schema(description = "Link de localização")
     private String localizacaoLink;
 
-     @Column(name = "status")
-     @Schema(description = "Status (A/I)")
-     private String status = "Ativo";
+    @Schema(description = "Status (A/I)")
+    private String status;
 
-    @Column(precision = 18, scale = 10)
     @Schema(description = "Latitude")
     private java.math.BigDecimal latitude;
 
-    @Column(precision = 18, scale = 10)
     @Schema(description = "Longitude")
     private java.math.BigDecimal longitude;
 

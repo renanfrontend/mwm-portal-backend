@@ -47,7 +47,7 @@ public class CooperadoService {
         BioFiliada filiada = null;
         if (dto.getFiliadaId() != null) {
             filiada = bioFiliadaRepository.findById(dto.getFiliadaId())
-                .orElseThrow(() -> new RuntimeException("Filiada com ID " + dto.getFiliadaId() + " não encontrada no banco de dados. Verifique se o cadastro da filiada existe ou contate o administrador."));
+                .orElseThrow(() -> new RuntimeException("Filiada informada não encontrada: " + dto.getFiliadaId()));
         } else {
              // Fallback legado: tenta achar pelo nome da transportadora
              filiada = bioFiliadaRepository.findByNome(transportadora.getNomeFantasia());

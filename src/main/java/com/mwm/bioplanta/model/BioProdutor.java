@@ -52,13 +52,13 @@ public class BioProdutor {
     @Schema(description = "Email")
     private String email;
 
-     @Column(name = "tipo_pessoa")
-     @Schema(description = "Tipo de pessoa (PF/PJ)")
-     private String tipoPessoa;
+    @Column(name = "tipo_pessoa")
+    @Schema(description = "Tipo de pessoa (PF/PJ)")
+    private String tipoPessoa;
 
-     @Column(name = "status")
-     @Schema(description = "Status do produtor (A/I)")
-     private String status = "A";
+    @Column(name = "status")
+    @Schema(description = "Status do produtor (A/I)")
+    private String status;
 
     @Column(name = "data_cadastro")
     @Schema(description = "Data de cadastro")

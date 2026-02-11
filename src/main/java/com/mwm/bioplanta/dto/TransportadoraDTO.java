@@ -34,22 +34,23 @@ public class TransportadoraDTO {
     @Schema(description = "UF", example = "PR", requiredMode = Schema.RequiredMode.REQUIRED)
     private String uf;
 
-    @Schema(description = "Telefone", example = "(45) 3333-4444", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String telefone;
-
-    @Schema(description = "Email", example = "contato@xyz.com.br", requiredMode = Schema.RequiredMode.REQUIRED)
-    private String email;
-
-    @Schema(description = "Telefone comercial", example = "(45) 3333-4444")
+    @Schema(description = "Telefone comercial", example = "(45) 3333-4444", requiredMode = Schema.RequiredMode.REQUIRED)
     private String telefoneComercial;
 
-    @Schema(description = "Email comercial", example = "contato@xyz.com.br")
+    @Schema(description = "Email comercial", example = "contato@xyz.com.br", requiredMode = Schema.RequiredMode.REQUIRED)
     private String emailComercial;
 
     @Schema(description = "Contato principal")
     private ContatoDTO contatoPrincipal;
 
+    @Schema(description = "Contato comercial")
+    private ContatoDTO contatoComercial;
 
+    @Schema(description = "Contato financeiro")
+    private ContatoDTO contatoFinanceiro;
+
+    @Schema(description = "Contato jurídico")
+    private ContatoDTO contatoJuridico;
 
     @Schema(description = "Lista de veículos")
     private List<VeiculoDTO> veiculos;
