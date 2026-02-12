@@ -47,15 +47,6 @@ public class TransportadoraResponseDTO {
     @Schema(description = "Contato principal")
     private ContatoDTO contatoPrincipal;
 
-    @Schema(description = "Contato comercial")
-    private ContatoDTO contatoComercial;
-
-    @Schema(description = "Contato financeiro")
-    private ContatoDTO contatoFinanceiro;
-
-    @Schema(description = "Contato jurídico")
-    private ContatoDTO contatoJuridico;
-
     @Schema(description = "Lista de veículos")
     private List<VeiculoDTO> veiculos;
 

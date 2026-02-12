@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 @RestController
 @RequestMapping("/api/biounidades")
 @Tag(name = "Bio Unidades", description = "Gerenciamento de unidades bio.")
-@CrossOrigin("*")
+
 public class BioUnidadeController {
 
     @Autowired

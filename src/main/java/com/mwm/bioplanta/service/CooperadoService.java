@@ -199,7 +199,13 @@ public class CooperadoService {
         // Aplicar paginação em memória (para dados pequenos)
         int start = (page - 1) * pageSize;
         int end = Math.min(start + pageSize, items.size());
-        List<ProdutorListResponseDTO> paginatedItems = items.subList(start, end);
+        
+        List<ProdutorListResponseDTO> paginatedItems;
+        if (start > items.size()) {
+            paginatedItems = List.of();
+        } else {
+            paginatedItems = items.subList(start, end);
+        }
 
         // Montar resposta
         ProdutorPageResponseDTO response = new ProdutorPageResponseDTO();
@@ -209,5 +215,84 @@ public class CooperadoService {
         response.setItems(paginatedItems);
 
         return response;
+    }
+
+    @Transactional
+    public BioEstabelecimento atualizarCooperado(Long id, CooperadoCreateDTO dto) {
+        System.out.println("Iniciando atualização de cooperado ID: " + id);
+
+        // 1. Buscar o Estabelecimento Existente
+        BioEstabelecimento estabelecimento = bioEstabelecimentoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Estabelecimento não encontrado com ID: " + id));
+
+        BioProdutor produtor = estabelecimento.getBioProdutor();
+
+        // 2. Atualizar Dados do Produtor
+        produtor.setNome(dto.getNomeCooperado());
+        produtor.setCpfCnpj(dto.getCpfCnpj());
+        produtor.setTelefonePrincipal(dto.getTelefone());
+        produtor.setTipoPessoa(dto.getCpfCnpj() != null && dto.getCpfCnpj().length() > 14 ? "PJ" : "PF");
+        produtor.setAtualizadoEm(LocalDateTime.now());
+        
+        // Se a filiada mudou
+        if (dto.getFiliadaId() != null && !dto.getFiliadaId().equals(produtor.getBioFiliada().getId())) {
+             BioFiliada novaFiliada = bioFiliadaRepository.findById(dto.getFiliadaId())
+                .orElseThrow(() -> new RuntimeException("Nova filiada não encontrada: " + dto.getFiliadaId()));
+             produtor.setBioFiliada(novaFiliada);
+        }
+        
+        bioProdutorRepository.save(produtor);
+
+        // 3. Atualizar Dados do Estabelecimento
+        estabelecimento.setNumeroEstabelecimento(dto.getNumEstabelecimento() != null ? dto.getNumEstabelecimento() : estabelecimento.getNumeroEstabelecimento());
+        estabelecimento.setNumeroPropriedade(dto.getNumPropriedade() != null ? dto.getNumPropriedade() : estabelecimento.getNumeroPropriedade());
+        estabelecimento.setMatricula(dto.getMatricula() != null ? dto.getMatricula().toString() : estabelecimento.getMatricula());
+        estabelecimento.setMunicipio(dto.getMunicipio() != null ? dto.getMunicipio() : estabelecimento.getMunicipio());
+        
+        // Atualizar estado se município mudou
+        if (dto.getMunicipio() != null && dto.getMunicipio().contains("-")) {
+            String[] parts = dto.getMunicipio().split("-");
+            if (parts.length > 1) {
+                estabelecimento.setEstado(parts[1].trim().substring(0, 2));
+            }
+        }
+        
+        estabelecimento.setNome(dto.getNomeCooperado() + " - " + (dto.getNumPropriedade() != null ? dto.getNumPropriedade() : ""));
+        estabelecimento.setEndereco(dto.getLocalizacao() != null ? dto.getLocalizacao() : estabelecimento.getEndereco());
+        estabelecimento.setResponsavel(dto.getResponsavel());
+        estabelecimento.setDistancia(dto.getDistancia());
+        estabelecimento.setRestricoes(dto.getRestricoes());
+        estabelecimento.setLatitude(dto.getLatitude());
+        estabelecimento.setLongitude(dto.getLongitude());
+        estabelecimento.setAtualizadoEm(LocalDateTime.now());
+        
+        estabelecimento = bioEstabelecimentoRepository.save(estabelecimento);
+
+        // 4. Atualizar Produção
+        BioProducao producao;
+        if (estabelecimento.getBioProducao() != null && !estabelecimento.getBioProducao().isEmpty()) {
+            producao = estabelecimento.getBioProducao().get(0);
+        } else {
+            producao = new BioProducao();
+            producao.setBioEstabelecimento(estabelecimento);
+            producao.setCriadoEm(LocalDateTime.now());
+            producao.setAnoSafra("2024/2025");
+            producao.setDataInicioProducao(LocalDate.now());
+            producao.setStatus("A");
+        }
+
+        producao.setModalidadeFase(dto.getFase() != null ? dto.getFase() : "N/A");
+        producao.setCertificacao(dto.getCertificado() != null && dto.getCertificado().equalsIgnoreCase("Ativo") ? "S" : "N");
+        producao.setDoacaoDejetos(dto.getDoamDejetos() != null && dto.getDoamDejetos().equalsIgnoreCase("Sim") ? "S" : "N");
+        producao.setQuantidadeCabecas(dto.getCabecas());
+        producao.setQtdLagoas(dto.getQtdLagoas());
+        producao.setVolLagoas(dto.getVolLagoas());
+        producao.setTecnicoResponsavel(dto.getTecnico());
+        producao.setTelefoneTecnico(dto.getTelefone());
+        producao.setAtualizadoEm(LocalDateTime.now());
+
+        bioProducaoRepository.save(producao);
+
+        return estabelecimento;
     }
 }

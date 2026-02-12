@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RestController
 @RequestMapping("/api/bio-estabelecimentos")
 @Tag(name = "Bio Estabelecimentos", description = "Gerenciamento de estabelecimentos.")
-@CrossOrigin("*")
+
 public class BioEstabelecimentoController {
 
     @Autowired

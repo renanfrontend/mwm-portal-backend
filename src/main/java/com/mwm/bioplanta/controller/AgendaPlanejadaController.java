@@ -22,7 +22,7 @@ import java.time.LocalDate;
 @RestController
 @RequestMapping("/api/agenda/planejado")
 @Tag(name = "Agenda Planejada", description = "Gerenciamento da agenda planejada.")
-@CrossOrigin("*")
+
 public class AgendaPlanejadaController {
 
     private final AgendaPlanejadaService agendaPlanejadaService;

@@ -28,4 +28,10 @@ public class BioProdutorSimplificadoDTO {
 
     @Schema(description = "Telefone principal", example = "45999999999")
     private String telefonePrincipal;
+
+    @Schema(description = "ID da filiada", example = "1")
+    private Long filiadaId;
+
+    @Schema(description = "Nome da filiada", example = "Filiada Exemplo")
+    private String filiadaNome;
 }

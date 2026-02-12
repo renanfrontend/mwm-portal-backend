@@ -26,6 +26,6 @@ public class VeiculoDTO {
     @Schema(description = "Tipo de abastecimento", example = "Diesel", requiredMode = Schema.RequiredMode.REQUIRED)
     private String tipoAbastecimento;
 
-    @Schema(description = "TAG para biometano (obrigatório quando tipoAbastecimento = Biometano)", example = "1234567890123456")
-    private String tag;
+    // @Schema(description = "TAG para biometano (obrigatório quando tipoAbastecimento = Biometano)", example = "1234567890123456")
+    // private String tag;
 }

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/categoria")
 @Tag(name = "Categoria", description = "Gerenciamento de categorias")
-@CrossOrigin("*")
+
 public class CategoriaController {
 
     private final BioCategoriaRepository bioCategoriaRepository;

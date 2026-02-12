@@ -41,11 +41,11 @@ public class BioTransportadora {
     @Schema(description = "CNPJ da transportadora", example = "12.345.678/0001-99", requiredMode = Schema.RequiredMode.REQUIRED)
     private String cnpj;
 
-    @Column(name = "telefone")
+    @Column(name = "telefone_comercial")
     @Schema(description = "Telefone comercial da transportadora", example = "45999470460")
     private String telefoneComercial;
 
-    @Column(name = "email")
+    @Column(name = "email_comercial")
     @Schema(description = "Email comercial da transportadora", example = "contato@transportadora.com")
     private String emailComercial;
 
@@ -72,42 +72,6 @@ public class BioTransportadora {
     @Column(name = "contato_principal_email")
     @Schema(description = "Email do contato principal", example = "joao@transportadora.com")
     private String contatoPrincipalEmail;
-
-    @Column(name = "contato_comercial_nome")
-    @Schema(description = "Nome do contato comercial", example = "Maria Santos")
-    private String contatoComercialNome;
-
-    @Column(name = "contato_comercial_telefone")
-    @Schema(description = "Telefone do contato comercial", example = "45999470461")
-    private String contatoComercialTelefone;
-
-    @Column(name = "contato_comercial_email")
-    @Schema(description = "Email do contato comercial", example = "maria@transportadora.com")
-    private String contatoComercialEmail;
-
-    @Column(name = "contato_financeiro_nome")
-    @Schema(description = "Nome do contato financeiro", example = "Pedro Oliveira")
-    private String contatoFinanceiroNome;
-
-    @Column(name = "contato_financeiro_telefone")
-    @Schema(description = "Telefone do contato financeiro", example = "45999470462")
-    private String contatoFinanceiroTelefone;
-
-    @Column(name = "contato_financeiro_email")
-    @Schema(description = "Email do contato financeiro", example = "pedro@transportadora.com")
-    private String contatoFinanceiroEmail;
-
-    @Column(name = "contato_juridico_nome")
-    @Schema(description = "Nome do contato jurídico", example = "Ana Costa")
-    private String contatoJuridicoNome;
-
-    @Column(name = "contato_juridico_telefone")
-    @Schema(description = "Telefone do contato jurídico", example = "45999470463")
-    private String contatoJuridicoTelefone;
-
-    @Column(name = "contato_juridico_email")
-    @Schema(description = "Email do contato jurídico", example = "ana@transportadora.com")
-    private String contatoJuridicoEmail;
 
     @Schema(description = "Status da transportadora", example = "Ativo")
     private String status;

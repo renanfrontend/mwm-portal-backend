@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/veiculo")
 @Tag(name = "Veículo", description = "Gerenciamento de tipos de veículos e combustíveis")
-@CrossOrigin("*")
+
 public class VeiculoController {
 
     private final BioVeiculoTipoRepository bioVeiculoTipoRepository;

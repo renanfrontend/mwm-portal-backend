@@ -75,13 +75,18 @@ public class ProdutorDetalheService {
         // Mapear dados do produtor
         BioProdutor produtor = estabelecimento.getBioProdutor();
         if (produtor != null) {
-            BioProdutorSimplificadoDTO produtorDTO = new BioProdutorSimplificadoDTO(
-                    produtor.getId(),
-                    produtor.getCodigoProdutor(),
-                    produtor.getNome(),
-                    produtor.getCpfCnpj(),
-                    produtor.getTelefonePrincipal()
-            );
+            BioProdutorSimplificadoDTO produtorDTO = new BioProdutorSimplificadoDTO();
+            produtorDTO.setId(produtor.getId());
+            produtorDTO.setCodigoProdutor(produtor.getCodigoProdutor());
+            produtorDTO.setNome(produtor.getNome());
+            produtorDTO.setCpfCnpj(produtor.getCpfCnpj());
+            produtorDTO.setTelefonePrincipal(produtor.getTelefonePrincipal());
+            
+            if (produtor.getBioFiliada() != null) {
+                produtorDTO.setFiliadaId(produtor.getBioFiliada().getId());
+                produtorDTO.setFiliadaNome(produtor.getBioFiliada().getNome());
+            }
+            
             dto.setBioProdutor(produtorDTO);
         }
 

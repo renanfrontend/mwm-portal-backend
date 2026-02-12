@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/filiadas")
 @Tag(name = "Filiadas", description = "Gerenciamento de filiadas (unidades/plantas)")
-@CrossOrigin("*")
+
 public class FiliadaController {
 
     private final FiliadaService filiadaService;

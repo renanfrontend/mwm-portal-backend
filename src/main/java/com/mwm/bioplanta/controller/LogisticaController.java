@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/logistica")
 @Tag(name = "Logística", description = "Gerenciamento de produtores e logística.")
-@CrossOrigin("*")
+
 public class LogisticaController {
 
     @Autowired
@@ -65,6 +65,20 @@ public class LogisticaController {
                     .orElse(ResponseEntity.notFound().build());
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @PutMapping("/produtores/{id}")
+    @Operation(summary = "Atualizar um cooperado existente")
+    public ResponseEntity<?> atualizarCooperado(@PathVariable Long id, @RequestBody CooperadoCreateDTO dto) {
+        System.out.println("🔄 Recebendo PUT Produtor ID: " + id);
+        System.out.println("📍 Lat recebida: " + dto.getLatitude());
+        System.out.println("📍 Long recebida: " + dto.getLongitude());
+        try {
+            BioEstabelecimento estabelecimento = cooperadoService.atualizarCooperado(id, dto);
+            return ResponseEntity.ok(estabelecimento);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         }
     }
 }
