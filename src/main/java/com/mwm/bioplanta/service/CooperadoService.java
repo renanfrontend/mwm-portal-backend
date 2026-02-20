@@ -164,6 +164,7 @@ public class CooperadoService {
         return estabelecimento;
     }
 
+    @Transactional(readOnly = true)
     public ProdutorPageResponseDTO listarProdutores(Long plantaId, Long filiadaId, Integer page, Integer pageSize) {
         // Validação de parâmetros de paginação
         if (page == null || page < 1) page = 1;
@@ -177,14 +178,26 @@ public class CooperadoService {
                 .map(e -> {
                     ProdutorListResponseDTO dto = new ProdutorListResponseDTO();
                     dto.setId(e.getId());
-                    dto.setNomeProdutor(e.getBioProdutor().getNome());
+                    
+                    if (e.getBioProdutor() != null) {
+                        dto.setNomeProdutor(e.getBioProdutor().getNome());
+                        if (e.getBioProdutor().getBioFiliada() != null) {
+                            dto.setFiliada(e.getBioProdutor().getBioFiliada().getNome());
+                        } else {
+                            dto.setFiliada("N/A");
+                        }
+                    } else {
+                        dto.setNomeProdutor("N/A");
+                        dto.setFiliada("N/A");
+                    }
+                    
                     dto.setNumEstabelecimento(e.getNumeroEstabelecimento());
-                    dto.setFiliada(e.getBioProdutor().getBioFiliada().getNome());
                     
                     // Buscar produção associada para campos específicos
-                    BioProducao producao = e.getBioProducao() != null && !e.getBioProducao().isEmpty() 
-                            ? e.getBioProducao().get(0) 
-                            : null;
+                    BioProducao producao = null;
+                    if (e.getBioProducao() != null && !e.getBioProducao().isEmpty()) {
+                         producao = e.getBioProducao().get(0);
+                    }
                     
                     if (producao != null) {
                         dto.setModalidade(producao.getModalidadeFase());

@@ -39,7 +39,7 @@ public class LogisticaController {
 
     @GetMapping("/produtores")
     @Operation(summary = "Listar produtores com paginação e filtros")
-    public ResponseEntity<ProdutorPageResponseDTO> listarProdutores(
+    public ResponseEntity<?> listarProdutores(
             @RequestParam(required = false) Long plantaId,
             @RequestParam(required = false) Long filiadaId,
             @RequestParam(defaultValue = "1") Integer page,
@@ -48,7 +48,8 @@ public class LogisticaController {
             ProdutorPageResponseDTO response = cooperadoService.listarProdutores(plantaId, filiadaId, page, pageSize);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         }
     }
 
