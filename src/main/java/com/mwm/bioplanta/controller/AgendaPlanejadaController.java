@@ -1,5 +1,8 @@
 package com.mwm.bioplanta.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.mwm.bioplanta.dto.AgendaPlanejadaDiaRequestDTO;
 import com.mwm.bioplanta.dto.AgendaPlanejadaSemanaResponseDTO;
 import com.mwm.bioplanta.dto.CopiarAgendaRequestDTO;
@@ -9,7 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -24,6 +26,8 @@ import java.time.LocalDate;
 @Tag(name = "Agenda Planejada", description = "Gerenciamento da agenda planejada.")
 
 public class AgendaPlanejadaController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AgendaPlanejadaController.class);
 
     private final AgendaPlanejadaService agendaPlanejadaService;
 
@@ -45,13 +49,12 @@ public class AgendaPlanejadaController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataFim) {
         try {
-            System.out.println("Iniciando carregarSemana: idBioplanta=" + idBioplanta + ", idFiliada=" + idFiliada);
+            logger.info("Iniciando carregarSemana: idBioplanta={}, idFiliada={}", idBioplanta, idFiliada);
             AgendaPlanejadaSemanaResponseDTO response = agendaPlanejadaService
                     .carregarSemana(idBioplanta, idFiliada, dataInicio, dataFim);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            System.err.println("Erro em carregarSemana: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Erro em carregarSemana: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().build();
         }
     }
@@ -63,8 +66,7 @@ public class AgendaPlanejadaController {
             agendaPlanejadaService.salvarDia(dto);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            System.err.println("Erro em salvarDia: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Erro em salvarDia: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().build();
         }
     }
@@ -76,8 +78,7 @@ public class AgendaPlanejadaController {
             agendaPlanejadaService.copiarSemana(dto);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            System.err.println("Erro em copiarSemana: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Erro em copiarSemana: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().build();
         }
     }
@@ -89,8 +90,7 @@ public class AgendaPlanejadaController {
             agendaPlanejadaService.limparSemana(dto);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
-            System.err.println("Erro em limparSemana: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Erro em limparSemana: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().build();
         }
     }
@@ -106,8 +106,7 @@ public class AgendaPlanejadaController {
             boolean existe = agendaPlanejadaService.verificarDadosSemana(idBioplanta, idFiliada, dataInicio, dataFim);
             return ResponseEntity.ok(existe);
         } catch (Exception e) {
-            System.err.println("Erro em verificarExistenciaDados: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Erro em verificarExistenciaDados: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().build(); // ou retornar false? Melhor badRequest se erro tecnico
         }
     }

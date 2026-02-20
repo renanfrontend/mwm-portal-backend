@@ -1,5 +1,8 @@
 package com.mwm.bioplanta.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.mwm.bioplanta.dto.CooperadoCreateDTO;
 import com.mwm.bioplanta.dto.ProdutorListResponseDTO;
 import com.mwm.bioplanta.dto.ProdutorPageResponseDTO;
@@ -17,27 +20,35 @@ import java.util.stream.Collectors;
 @Service
 public class CooperadoService {
 
-    @Autowired
-    private BioFiliadaRepository bioFiliadaRepository;
+    private static final Logger logger = LoggerFactory.getLogger(CooperadoService.class);
 
-    @Autowired
-    private BioProdutorRepository bioProdutorRepository;
 
-    @Autowired
-    private BioEstabelecimentoRepository bioEstabelecimentoRepository;
+    private final BioFiliadaRepository bioFiliadaRepository;
+    private final BioProdutorRepository bioProdutorRepository;
+    private final BioEstabelecimentoRepository bioEstabelecimentoRepository;
+    private final BioProducaoRepository bioProducaoRepository;
+    private final BioTransportadoraRepository bioTransportadoraRepository;
+    private final BioPlantaRepository bioPlantaRepository;
 
-    @Autowired
-    private BioProducaoRepository bioProducaoRepository;
-
-    @Autowired
-    private BioTransportadoraRepository bioTransportadoraRepository;
-
-    @Autowired
-    private BioPlantaRepository bioPlantaRepository;
+    public CooperadoService(
+        BioFiliadaRepository bioFiliadaRepository,
+        BioProdutorRepository bioProdutorRepository,
+        BioEstabelecimentoRepository bioEstabelecimentoRepository,
+        BioProducaoRepository bioProducaoRepository,
+        BioTransportadoraRepository bioTransportadoraRepository,
+        BioPlantaRepository bioPlantaRepository
+    ) {
+        this.bioFiliadaRepository = bioFiliadaRepository;
+        this.bioProdutorRepository = bioProdutorRepository;
+        this.bioEstabelecimentoRepository = bioEstabelecimentoRepository;
+        this.bioProducaoRepository = bioProducaoRepository;
+        this.bioTransportadoraRepository = bioTransportadoraRepository;
+        this.bioPlantaRepository = bioPlantaRepository;
+    }
 
     @Transactional
     public BioEstabelecimento criarCooperado(CooperadoCreateDTO dto) {
-        System.out.println("Iniciando criação de cooperado: " + dto.getNomeCooperado());
+        logger.info("Iniciando criação de cooperado: {}", dto.getNomeCooperado());
         
         // 1. Buscar BioTransportadora
         BioTransportadora transportadora = bioTransportadoraRepository.findById(dto.getTransportadoraId())
@@ -54,10 +65,10 @@ public class CooperadoService {
         }
 
         if (filiada == null) {
-             System.out.println("ERRO: Filiada não encontrada. ID: " + dto.getFiliadaId() + " ou Nome: " + transportadora.getNomeFantasia());
+             logger.error("ERRO: Filiada não encontrada. ID: {} ou Nome: {}", dto.getFiliadaId(), transportadora.getNomeFantasia());
              throw new RuntimeException("Filiada não encontrada. Informe o ID da filiada ou verifique o cadastro.");
         }
-        System.out.println("Filiada selecionada: " + filiada.getId() + " - " + filiada.getNome());
+        logger.info("Filiada selecionada: {} - {}", filiada.getId(), filiada.getNome());
 
         // 3. Verificar ou criar BioProdutor
         BioProdutor produtor = bioProdutorRepository.findByCpfCnpj(dto.getCpfCnpj());
@@ -71,10 +82,16 @@ public class CooperadoService {
             produtor.setStatus("A");
             produtor.setDataCadastro(LocalDate.now());
             produtor.setCodigoProdutor("PROD-" + System.currentTimeMillis()); // Gerador simples provisório
-            
             produtor.setCriadoEm(LocalDateTime.now());
             produtor.setAtualizadoEm(LocalDateTime.now());
+            produtor.setDistanciaKm(dto.getDistanciaKm());
             produtor = bioProdutorRepository.save(produtor);
+        } else {
+            // Atualiza distância se vier preenchida
+            if (dto.getDistanciaKm() != null) {
+                produtor.setDistanciaKm(dto.getDistanciaKm());
+                bioProdutorRepository.save(produtor);
+            }
         }
 
         // 3.1. Validar duplicidade de Estabelecimento (Regra de Negócio)
@@ -111,7 +128,7 @@ public class CooperadoService {
         estabelecimento.setNome(dto.getNomeCooperado() + " - " + (dto.getNumPropriedade() != null ? dto.getNumPropriedade() : ""));
         estabelecimento.setEndereco(dto.getLocalizacao() != null ? dto.getLocalizacao() : dto.getMunicipio());
         estabelecimento.setResponsavel(dto.getResponsavel());
-        estabelecimento.setDistancia(dto.getDistancia());
+        // estabelecimento.setDistancia(dto.getDistancia()); // Campo distancia removido do DTO, ajuste se necessário
         estabelecimento.setRestricoes(dto.getRestricoes());
         estabelecimento.setStatus("A");
         estabelecimento.setLatitude(dto.getLatitude());
@@ -219,7 +236,7 @@ public class CooperadoService {
 
     @Transactional
     public BioEstabelecimento atualizarCooperado(Long id, CooperadoCreateDTO dto) {
-        System.out.println("Iniciando atualização de cooperado ID: " + id);
+        logger.info("Iniciando atualização de cooperado ID: {}", id);
 
         // 1. Buscar o Estabelecimento Existente
         BioEstabelecimento estabelecimento = bioEstabelecimentoRepository.findById(id)
@@ -260,7 +277,7 @@ public class CooperadoService {
         estabelecimento.setNome(dto.getNomeCooperado() + " - " + (dto.getNumPropriedade() != null ? dto.getNumPropriedade() : ""));
         estabelecimento.setEndereco(dto.getLocalizacao() != null ? dto.getLocalizacao() : estabelecimento.getEndereco());
         estabelecimento.setResponsavel(dto.getResponsavel());
-        estabelecimento.setDistancia(dto.getDistancia());
+        // estabelecimento.setDistancia(dto.getDistancia()); // Campo distancia removido do DTO, ajuste se necessário
         estabelecimento.setRestricoes(dto.getRestricoes());
         estabelecimento.setLatitude(dto.getLatitude());
         estabelecimento.setLongitude(dto.getLongitude());

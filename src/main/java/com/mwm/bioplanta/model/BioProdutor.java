@@ -56,9 +56,14 @@ public class BioProdutor {
     @Schema(description = "Tipo de pessoa (PF/PJ)")
     private String tipoPessoa;
 
+
     @Column(name = "status")
     @Schema(description = "Status do produtor (A/I)")
     private String status;
+
+    @Column(name = "distancia_km", precision = 8, scale = 2)
+    @Schema(description = "Distância em km do produtor até a planta", example = "12.50")
+    private java.math.BigDecimal distanciaKm;
 
     @Column(name = "data_cadastro")
     @Schema(description = "Data de cadastro")

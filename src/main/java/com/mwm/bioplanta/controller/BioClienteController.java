@@ -3,9 +3,7 @@ package com.mwm.bioplanta.controller;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,8 +25,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 public class BioClienteController {
 
-    @Autowired
-    private BioClienteRepository bioClienteRepository;
+    private final BioClienteRepository bioClienteRepository;
+
+    public BioClienteController(BioClienteRepository bioClienteRepository) {
+        this.bioClienteRepository = bioClienteRepository;
+    }
 
     @GetMapping
     @Operation(summary = "Obter todos os clientes")
@@ -39,20 +40,20 @@ public class BioClienteController {
     @GetMapping("/{id}")
     @Operation(summary = "Obter cliente por ID")
     public ResponseEntity<BioCliente> obterPorId(@PathVariable Long id) {
-        Optional<BioCliente> bioCliente = bioClienteRepository.findById(id);
+        Optional<BioCliente> bioCliente = bioClienteRepository.findById(java.util.Objects.requireNonNull(id));
         return bioCliente.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @Operation(summary = "Criar um novo cliente")
     public BioCliente criar(@RequestBody BioCliente bioCliente) {
-        return bioClienteRepository.save(bioCliente);
+        return bioClienteRepository.save(java.util.Objects.requireNonNull(bioCliente));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar cliente por ID")
     public ResponseEntity<BioCliente> atualizar(@PathVariable Long id, @RequestBody BioCliente bioCliente) {
-        if (!bioClienteRepository.existsById(id)) {
+        if (!bioClienteRepository.existsById(java.util.Objects.requireNonNull(id))) {
             return ResponseEntity.notFound().build();
         }
         bioCliente.setId(id);
@@ -63,10 +64,10 @@ public class BioClienteController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Deletar cliente por ID")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        if (!bioClienteRepository.existsById(id)) {
+        if (!bioClienteRepository.existsById(java.util.Objects.requireNonNull(id))) {
             return ResponseEntity.notFound().build();
         }
-        bioClienteRepository.deleteById(id);
+        bioClienteRepository.deleteById(java.util.Objects.requireNonNull(id));
         return ResponseEntity.noContent().build();
     }
 }

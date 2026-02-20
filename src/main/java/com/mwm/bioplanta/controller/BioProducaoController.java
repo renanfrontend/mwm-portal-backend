@@ -3,9 +3,7 @@ package com.mwm.bioplanta.controller;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,8 +25,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 public class BioProducaoController {
 
-    @Autowired
-    private BioProducaoRepository bioProducaoRepository;
+    private final BioProducaoRepository bioProducaoRepository;
+
+    public BioProducaoController(BioProducaoRepository bioProducaoRepository) {
+        this.bioProducaoRepository = bioProducaoRepository;
+    }
 
     @GetMapping
     @Operation(summary = "Obter todas as produções")
@@ -39,20 +40,20 @@ public class BioProducaoController {
     @GetMapping("/{id}")
     @Operation(summary = "Obter produção por ID")
     public ResponseEntity<BioProducao> obterPorId(@PathVariable Long id) {
-        Optional<BioProducao> bioProducao = bioProducaoRepository.findById(id);
+        Optional<BioProducao> bioProducao = bioProducaoRepository.findById(java.util.Objects.requireNonNull(id));
         return bioProducao.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @Operation(summary = "Criar uma nova produção")
     public BioProducao criar(@RequestBody BioProducao bioProducao) {
-        return bioProducaoRepository.save(bioProducao);
+        return bioProducaoRepository.save(java.util.Objects.requireNonNull(bioProducao));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar produção por ID")
     public ResponseEntity<BioProducao> atualizar(@PathVariable Long id, @RequestBody BioProducao bioProducao) {
-        if (!bioProducaoRepository.existsById(id)) {
+        if (!bioProducaoRepository.existsById(java.util.Objects.requireNonNull(id))) {
             return ResponseEntity.notFound().build();
         }
         bioProducao.setId(id);
@@ -63,10 +64,10 @@ public class BioProducaoController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Deletar produção por ID")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        if (!bioProducaoRepository.existsById(id)) {
+        if (!bioProducaoRepository.existsById(java.util.Objects.requireNonNull(id))) {
             return ResponseEntity.notFound().build();
         }
-        bioProducaoRepository.deleteById(id);
+        bioProducaoRepository.deleteById(java.util.Objects.requireNonNull(id));
         return ResponseEntity.noContent().build();
     }
 }

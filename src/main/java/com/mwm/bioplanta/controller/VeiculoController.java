@@ -9,7 +9,6 @@ import com.mwm.bioplanta.repository.BioVeiculoCombustivelRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,7 +37,7 @@ public class VeiculoController {
         List<VeiculoTipoResponseDTO> tipos = bioVeiculoTipoRepository.findAll()
                 .stream()
                 .map(this::toTipoDTO)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(tipos);
     }
 
@@ -48,7 +47,7 @@ public class VeiculoController {
         List<VeiculoCombustivelResponseDTO> combustiveis = bioVeiculoCombustivelRepository.findAll()
                 .stream()
                 .map(this::toCombustivelDTO)
-                .collect(Collectors.toList());
+                .toList();
         return ResponseEntity.ok(combustiveis);
     }
 

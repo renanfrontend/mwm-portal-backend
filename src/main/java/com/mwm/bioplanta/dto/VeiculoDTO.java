@@ -27,5 +27,4 @@ public class VeiculoDTO {
     private String tipoAbastecimento;
 
     // @Schema(description = "TAG para biometano (obrigatório quando tipoAbastecimento = Biometano)", example = "1234567890123456")
-    // private String tag;
 }

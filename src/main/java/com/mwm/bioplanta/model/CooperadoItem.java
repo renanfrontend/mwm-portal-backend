@@ -26,7 +26,7 @@ public class CooperadoItem {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Schema(description = "Identificador único do item de cooperado", example = "1")
-	private Long id;//TODO Renan avisar que não é String
+	private Long id;
 	@Schema(description = "Número de matrícula", example = "102646", requiredMode = Schema.RequiredMode.REQUIRED)
 	private Long matricula;
 	@Schema(description = "Filiado", example = "Primato", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -55,10 +55,10 @@ public class CooperadoItem {
 	private String localizacao;
     @Column(precision = 18, scale = 10)
 	@Schema(description = "Latitude", example = "-24,7229319", requiredMode = Schema.RequiredMode.REQUIRED)
-	private BigDecimal latitude;//TODO definir limite
+	private BigDecimal latitude;
 	@Column(precision = 18, scale = 10)
 	@Schema(description = "Longitude", example = "-53,8641137", requiredMode = Schema.RequiredMode.REQUIRED)
-	private BigDecimal longitude;//TODO definir limite
+	private BigDecimal longitude;
 	@Schema(description = "Técnico", example = "Daniel", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String tecnico;
 	@Schema(description = "Telefone", example = "4533761170", requiredMode = Schema.RequiredMode.REQUIRED)

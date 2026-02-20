@@ -80,4 +80,7 @@ public class ProdutorDetalheDTO {
 
     @Schema(description = "Dados básicos do produtor")
     private BioProdutorSimplificadoDTO bioProdutor;
+
+    @Schema(description = "Distância em km do produtor até a planta", example = "12.50")
+    private java.math.BigDecimal distanciaKm;
 }

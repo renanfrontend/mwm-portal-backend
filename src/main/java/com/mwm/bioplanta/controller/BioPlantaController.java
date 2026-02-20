@@ -3,9 +3,7 @@ package com.mwm.bioplanta.controller;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,8 +25,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 public class BioPlantaController {
 
-    @Autowired
-    private BioPlantaRepository bioPlantaRepository;
+    private final BioPlantaRepository bioPlantaRepository;
+
+    public BioPlantaController(BioPlantaRepository bioPlantaRepository) {
+        this.bioPlantaRepository = bioPlantaRepository;
+    }
 
     @GetMapping
     @Operation(summary = "Obter todas as plantas")
@@ -39,20 +40,20 @@ public class BioPlantaController {
     @GetMapping("/{id}")
     @Operation(summary = "Obter planta por ID")
     public ResponseEntity<BioPlanta> obterPorId(@PathVariable Long id) {
-        Optional<BioPlanta> bioPlanta = bioPlantaRepository.findById(id);
+        Optional<BioPlanta> bioPlanta = bioPlantaRepository.findById(java.util.Objects.requireNonNull(id));
         return bioPlanta.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
     @Operation(summary = "Criar uma nova planta")
     public BioPlanta criar(@RequestBody BioPlanta bioPlanta) {
-        return bioPlantaRepository.save(bioPlanta);
+        return bioPlantaRepository.save(java.util.Objects.requireNonNull(bioPlanta));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "Atualizar planta por ID")
     public ResponseEntity<BioPlanta> atualizar(@PathVariable Long id, @RequestBody BioPlanta bioPlanta) {
-        if (!bioPlantaRepository.existsById(id)) {
+        if (!bioPlantaRepository.existsById(java.util.Objects.requireNonNull(id))) {
             return ResponseEntity.notFound().build();
         }
         bioPlanta.setId(id);
@@ -63,10 +64,10 @@ public class BioPlantaController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Deletar planta por ID")
     public ResponseEntity<Void> deletar(@PathVariable Long id) {
-        if (!bioPlantaRepository.existsById(id)) {
+        if (!bioPlantaRepository.existsById(java.util.Objects.requireNonNull(id))) {
             return ResponseEntity.notFound().build();
         }
-        bioPlantaRepository.deleteById(id);
+        bioPlantaRepository.deleteById(java.util.Objects.requireNonNull(id));
         return ResponseEntity.noContent().build();
     }
 }

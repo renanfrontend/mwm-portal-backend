@@ -1,5 +1,8 @@
 package com.mwm.bioplanta.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.mwm.bioplanta.dto.CooperadoCreateDTO;
 import com.mwm.bioplanta.dto.ProdutorDetalheDTO;
 import com.mwm.bioplanta.dto.ProdutorPageResponseDTO;
@@ -18,11 +21,15 @@ import org.springframework.web.bind.annotation.*;
 
 public class LogisticaController {
 
-    @Autowired
-    private CooperadoService cooperadoService;
+    private static final Logger logger = LoggerFactory.getLogger(LogisticaController.class);
 
-    @Autowired
-    private ProdutorDetalheService produtorDetalheService;
+    private final CooperadoService cooperadoService;
+    private final ProdutorDetalheService produtorDetalheService;
+
+    public LogisticaController(CooperadoService cooperadoService, ProdutorDetalheService produtorDetalheService) {
+        this.cooperadoService = cooperadoService;
+        this.produtorDetalheService = produtorDetalheService;
+    }
 
     @GetMapping("/test")
     @Operation(summary = "Teste se o controller está carregado")
@@ -71,9 +78,9 @@ public class LogisticaController {
     @PutMapping("/produtores/{id}")
     @Operation(summary = "Atualizar um cooperado existente")
     public ResponseEntity<?> atualizarCooperado(@PathVariable Long id, @RequestBody CooperadoCreateDTO dto) {
-        System.out.println("🔄 Recebendo PUT Produtor ID: " + id);
-        System.out.println("📍 Lat recebida: " + dto.getLatitude());
-        System.out.println("📍 Long recebida: " + dto.getLongitude());
+        logger.info("🔄 Recebendo PUT Produtor ID: {}", id);
+        logger.info("📍 Lat recebida: {}", dto.getLatitude());
+        logger.info("📍 Long recebida: {}", dto.getLongitude());
         try {
             BioEstabelecimento estabelecimento = cooperadoService.atualizarCooperado(id, dto);
             return ResponseEntity.ok(estabelecimento);

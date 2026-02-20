@@ -20,5 +20,7 @@ public interface BioTransportadoraRepository extends JpaRepository<BioTransporta
             "t.cnpj LIKE CONCAT('%', :search, '%')")
     Page<BioTransportadora> buscar(@Param("search") String search, Pageable pageable);
 
-    Page<BioTransportadora> findAll(Pageable pageable);
+    @Override
+    @org.springframework.lang.NonNull
+    Page<BioTransportadora> findAll(@org.springframework.lang.NonNull Pageable pageable);
 }

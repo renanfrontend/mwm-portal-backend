@@ -34,4 +34,7 @@ public class BioProdutorSimplificadoDTO {
 
     @Schema(description = "Nome da filiada", example = "Filiada Exemplo")
     private String filiadaNome;
+
+    @Schema(description = "Distância em km do produtor até a planta", example = "12.50")
+    private java.math.BigDecimal distanciaKm;
 }

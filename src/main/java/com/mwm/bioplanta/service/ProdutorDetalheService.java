@@ -6,7 +6,6 @@ import com.mwm.bioplanta.model.BioEstabelecimento;
 import com.mwm.bioplanta.model.BioProducao;
 import com.mwm.bioplanta.model.BioProdutor;
 import com.mwm.bioplanta.repository.BioEstabelecimentoRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,8 +19,11 @@ import java.util.Optional;
 @Service
 public class ProdutorDetalheService {
 
-    @Autowired
-    private BioEstabelecimentoRepository estabelecimentoRepository;
+    private final BioEstabelecimentoRepository estabelecimentoRepository;
+
+    public ProdutorDetalheService(BioEstabelecimentoRepository estabelecimentoRepository) {
+        this.estabelecimentoRepository = estabelecimentoRepository;
+    }
 
     /**
      * Busca detalhes completos de um produtor pelo ID do estabelecimento
@@ -30,7 +32,7 @@ public class ProdutorDetalheService {
      */
     @Transactional(readOnly = true)
     public Optional<ProdutorDetalheDTO> buscarDetalhePorId(Long id) {
-        Optional<BioEstabelecimento> estabelecimentoOpt = estabelecimentoRepository.findById(id);
+        Optional<BioEstabelecimento> estabelecimentoOpt = estabelecimentoRepository.findById(java.util.Objects.requireNonNull(id));
         
         if (estabelecimentoOpt.isEmpty()) {
             return Optional.empty();
@@ -48,6 +50,7 @@ public class ProdutorDetalheService {
                 .latitude(estabelecimento.getLatitude())
                 .longitude(estabelecimento.getLongitude())
                 .distancia(estabelecimento.getDistancia())
+                .distanciaKm(estabelecimento.getBioProdutor() != null ? estabelecimento.getBioProdutor().getDistanciaKm() : null)
                 .responsavel(estabelecimento.getResponsavel())
                 .restricoes(estabelecimento.getRestricoes())
                 .localizacao(estabelecimento.getLocalizacaoLink()) // Link de localização
@@ -81,6 +84,7 @@ public class ProdutorDetalheService {
             produtorDTO.setNome(produtor.getNome());
             produtorDTO.setCpfCnpj(produtor.getCpfCnpj());
             produtorDTO.setTelefonePrincipal(produtor.getTelefonePrincipal());
+            produtorDTO.setDistanciaKm(produtor.getDistanciaKm());
             
             if (produtor.getBioFiliada() != null) {
                 produtorDTO.setFiliadaId(produtor.getBioFiliada().getId());

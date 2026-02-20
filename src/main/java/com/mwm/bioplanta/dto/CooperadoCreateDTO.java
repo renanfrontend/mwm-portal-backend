@@ -74,8 +74,8 @@ public class CooperadoCreateDTO {
     @Schema(description = "Longitude", example = "-53.741378")
     private java.math.BigDecimal longitude;
 
-    @Schema(description = "Distância até a planta", example = "15 km")
-    private String distancia;
+    @Schema(description = "Distância em km do produtor até a planta", example = "12.50")
+    private java.math.BigDecimal distanciaKm;
 
     @Schema(description = "Restrições operacionais", example = "Caminhão não entra com chuva")
     private String restricoes;

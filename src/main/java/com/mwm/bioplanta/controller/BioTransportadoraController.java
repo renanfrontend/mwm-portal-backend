@@ -1,8 +1,6 @@
 package com.mwm.bioplanta.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -28,8 +26,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 public class BioTransportadoraController {
 
-    @Autowired
-    private BioTransportadoraService bioTransportadoraService;
+    private final BioTransportadoraService bioTransportadoraService;
+
+    public BioTransportadoraController(BioTransportadoraService bioTransportadoraService) {
+        this.bioTransportadoraService = bioTransportadoraService;
+    }
 
     @GetMapping
     @Operation(summary = "Listar transportadoras com paginação e busca")
@@ -54,16 +55,16 @@ public class BioTransportadoraController {
 
     @PostMapping
     @Operation(summary = "Criar uma nova transportadora")
-    public ResponseEntity<?> criar(@RequestBody TransportadoraDTO dto) {
+    public ResponseEntity<TransportadoraResponseDTO> criar(@RequestBody TransportadoraDTO dto) {
         try {
             TransportadoraResponseDTO response = bioTransportadoraService.criar(dto);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             String mensagem = e.getMessage();
             if (mensagem != null && mensagem.toLowerCase().contains("cnpj")) {
-                return ResponseEntity.badRequest().body("cnpj ja esta cadastrado.");
+                return ResponseEntity.badRequest().build();
             }
-            return ResponseEntity.badRequest().body("erro ao criar transportadora");
+            return ResponseEntity.badRequest().build();
         }
     }
 

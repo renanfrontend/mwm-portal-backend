@@ -23,7 +23,7 @@ public class ColetaItem {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Schema(description = "Identificador único do item de coleta", example = "1")
-	private Long id;//TODO Renan se quiser uuid será preciso de um novo campo
+	private Long id;
 	@Schema(description = "Cooperado da coleta", example = "Luiz Carlos", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String cooperado;
 	@Schema(description = "Motorista da coleta", example = "João Neves", requiredMode = Schema.RequiredMode.NOT_REQUIRED)

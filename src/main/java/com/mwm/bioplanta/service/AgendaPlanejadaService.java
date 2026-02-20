@@ -310,7 +310,7 @@ public class AgendaPlanejadaService {
         if (distancia == null || distancia.isBlank()) {
             return 0;
         }
-        String apenasNumeros = distancia.replaceAll("[^0-9]", "");
+        String apenasNumeros = distancia.replaceAll("\\D", "");
         if (apenasNumeros.isEmpty()) {
             return 0;
         }

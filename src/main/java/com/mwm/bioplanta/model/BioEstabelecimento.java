@@ -62,7 +62,6 @@ public class BioEstabelecimento {
     
     // Telefone removido pois não existe na tabela bio_estabelecimento
     // @Schema(description = "Telefone")
-    // private String telefone;
 
     // Campos migrados de BioPropriedade que fazem sentido estar no local físico (Estabelecimento)
     @Schema(description = "Município")

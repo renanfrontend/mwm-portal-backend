@@ -21,8 +21,6 @@ import java.util.stream.Collectors;
 public class BioTransportadoraService {
 
     private static final String TRANSPORTADORA_NAO_ENCONTRADA = "Transportadora não encontrada com ID: ";
-    private static final String BIOMETANO = "Biometano";
-    private static final String VEICULO_NAO_PERTENCE = "Veículo não pertence a esta transportadora";
 
     private final BioTransportadoraRepository bioTransportadoraRepository;
     private final BioVeiculoTransportadoraRepository bioVeiculoTransportadoraRepository;
@@ -66,8 +64,8 @@ public class BioTransportadoraService {
      */
     @Transactional
     public TransportadoraResponseDTO atualizar(Long id, TransportadoraDTO dto) {
-        BioTransportadora transportadora = bioTransportadoraRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(TRANSPORTADORA_NAO_ENCONTRADA + id));
+        BioTransportadora transportadora = bioTransportadoraRepository.findById(java.util.Objects.requireNonNull(id))
+            .orElseThrow(() -> new IllegalArgumentException(TRANSPORTADORA_NAO_ENCONTRADA + id));
 
         preencherTransportadora(transportadora, dto);
         transportadora.setAtualizadoEm(LocalDateTime.now());
@@ -77,7 +75,7 @@ public class BioTransportadoraService {
         // Atualizar veículos: remover os antigos e adicionar os novos
         if (dto.getVeiculos() != null) {
             List<BioVeiculoTransportadora> veiculosAntigos = bioVeiculoTransportadoraRepository.findByBioTransportadoraId(id);
-            bioVeiculoTransportadoraRepository.deleteAll(veiculosAntigos);
+            bioVeiculoTransportadoraRepository.deleteAll(java.util.Objects.requireNonNull(veiculosAntigos));
 
             for (VeiculoDTO veiculoDTO : dto.getVeiculos()) {
                 salvarVeiculo(transportadora, veiculoDTO);
@@ -91,8 +89,8 @@ public class BioTransportadoraService {
      * Buscar transportadora por ID
      */
     public TransportadoraResponseDTO buscarPorId(Long id) {
-        BioTransportadora transportadora = bioTransportadoraRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException(TRANSPORTADORA_NAO_ENCONTRADA + id));
+        BioTransportadora transportadora = bioTransportadoraRepository.findById(java.util.Objects.requireNonNull(id))
+            .orElseThrow(() -> new IllegalArgumentException(TRANSPORTADORA_NAO_ENCONTRADA + id));
         return converterParaResponseDTO(transportadora);
     }
 
@@ -130,15 +128,15 @@ public class BioTransportadoraService {
      */
     @Transactional
     public void deletar(Long id) {
-        if (!bioTransportadoraRepository.existsById(id)) {
-            throw new RuntimeException("Transportadora não encontrada com ID: " + id);
+        if (!bioTransportadoraRepository.existsById(java.util.Objects.requireNonNull(id))) {
+            throw new IllegalArgumentException(TRANSPORTADORA_NAO_ENCONTRADA + id);
         }
 
         // Deletar veículos associados
         List<BioVeiculoTransportadora> veiculos = bioVeiculoTransportadoraRepository.findByBioTransportadoraId(id);
-        bioVeiculoTransportadoraRepository.deleteAll(veiculos);
+        bioVeiculoTransportadoraRepository.deleteAll(java.util.Objects.requireNonNull(veiculos));
 
-        bioTransportadoraRepository.deleteById(id);
+        bioTransportadoraRepository.deleteById(java.util.Objects.requireNonNull(id));
     }
 
     /**
@@ -146,18 +144,9 @@ public class BioTransportadoraService {
      */
     @Transactional
     public VeiculoDTO adicionarVeiculo(Long transportadoraId, VeiculoDTO veiculoDTO) {
-        BioTransportadora transportadora = bioTransportadoraRepository.findById(transportadoraId)
-                .orElseThrow(() -> new RuntimeException("Transportadora não encontrada com ID: " + transportadoraId));
+        BioTransportadora transportadora = bioTransportadoraRepository.findById(java.util.Objects.requireNonNull(transportadoraId))
+            .orElseThrow(() -> new IllegalArgumentException(TRANSPORTADORA_NAO_ENCONTRADA + transportadoraId));
 
-        // Validar tag obrigatória para Biometano
-        // if ("Biometano".equals(veiculoDTO.getTipoAbastecimento())) {
-        //     if (veiculoDTO.getTag() == null || veiculoDTO.getTag().trim().isEmpty()) {
-        //         throw new RuntimeException("TAG é obrigatória quando o tipo de abastecimento é Biometano");
-        //     }
-        //     if (veiculoDTO.getTag().length() != 16) {
-        //         throw new RuntimeException("TAG deve ter exatamente 16 caracteres");
-        //     }
-        // }
 
         BioVeiculoTransportadora veiculo = new BioVeiculoTransportadora();
         veiculo.setBioTransportadora(transportadora);
@@ -165,7 +154,6 @@ public class BioTransportadoraService {
         veiculo.setCapacidade(veiculoDTO.getCapacidade());
         veiculo.setPlaca(veiculoDTO.getPlaca());
         veiculo.setTipoAbastecimento(veiculoDTO.getTipoAbastecimento());
-        // veiculo.setTag(veiculoDTO.getTag());
         veiculo.setCriadoEm(LocalDateTime.now());
         veiculo.setAtualizadoEm(LocalDateTime.now());
 
@@ -179,32 +167,22 @@ public class BioTransportadoraService {
      */
     @Transactional
     public VeiculoDTO editarVeiculo(Long transportadoraId, Long veiculoId, VeiculoDTO veiculoDTO) {
-        BioTransportadora transportadora = bioTransportadoraRepository.findById(transportadoraId)
-                .orElseThrow(() -> new RuntimeException("Transportadora não encontrada com ID: " + transportadoraId));
+        bioTransportadoraRepository.findById(java.util.Objects.requireNonNull(transportadoraId))
+            .orElseThrow(() -> new IllegalArgumentException(TRANSPORTADORA_NAO_ENCONTRADA + transportadoraId));
 
-        BioVeiculoTransportadora veiculo = bioVeiculoTransportadoraRepository.findById(veiculoId)
-                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com ID: " + veiculoId));
+        BioVeiculoTransportadora veiculo = bioVeiculoTransportadoraRepository.findById(java.util.Objects.requireNonNull(veiculoId))
+            .orElseThrow(() -> new IllegalArgumentException("Veículo não encontrado com ID: " + veiculoId));
 
         // Validar se o veículo pertence à transportadora
-        if (!veiculo.getBioTransportadora().getId().equals(transportadoraId)) {
-            throw new RuntimeException("Veículo não pertence a esta transportadora");
+        if (!veiculo.getBioTransportadora().getId().equals(java.util.Objects.requireNonNull(transportadoraId))) {
+            throw new IllegalArgumentException("Veículo não pertence a esta transportadora");
         }
 
-        // Validar tag obrigatória para Biometano
-        // if ("Biometano".equals(veiculoDTO.getTipoAbastecimento())) {
-        //     if (veiculoDTO.getTag() == null || veiculoDTO.getTag().trim().isEmpty()) {
-        //         throw new RuntimeException("TAG é obrigatória quando o tipo de abastecimento é Biometano");
-        //     }
-        //     if (veiculoDTO.getTag().length() != 16) {
-        //         throw new RuntimeException("TAG deve ter exatamente 16 caracteres");
-        //     }
-        // }
 
         veiculo.setTipo(veiculoDTO.getTipo());
         veiculo.setCapacidade(veiculoDTO.getCapacidade());
         veiculo.setPlaca(veiculoDTO.getPlaca());
         veiculo.setTipoAbastecimento(veiculoDTO.getTipoAbastecimento());
-        // veiculo.setTag(veiculoDTO.getTag());
         veiculo.setAtualizadoEm(LocalDateTime.now());
 
         veiculo = bioVeiculoTransportadoraRepository.save(veiculo);
@@ -217,18 +195,18 @@ public class BioTransportadoraService {
      */
     @Transactional
     public void removerVeiculo(Long transportadoraId, Long veiculoId) {
-        BioTransportadora transportadora = bioTransportadoraRepository.findById(transportadoraId)
-                .orElseThrow(() -> new RuntimeException("Transportadora não encontrada com ID: " + transportadoraId));
+        bioTransportadoraRepository.findById(java.util.Objects.requireNonNull(transportadoraId))
+            .orElseThrow(() -> new IllegalArgumentException(TRANSPORTADORA_NAO_ENCONTRADA + transportadoraId));
 
-        BioVeiculoTransportadora veiculo = bioVeiculoTransportadoraRepository.findById(veiculoId)
-                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com ID: " + veiculoId));
+        BioVeiculoTransportadora veiculo = bioVeiculoTransportadoraRepository.findById(java.util.Objects.requireNonNull(veiculoId))
+            .orElseThrow(() -> new IllegalArgumentException("Veículo não encontrado com ID: " + veiculoId));
 
         // Validar se o veículo pertence à transportadora
-        if (!veiculo.getBioTransportadora().getId().equals(transportadoraId)) {
-            throw new RuntimeException("Veículo não pertence a esta transportadora");
+        if (!veiculo.getBioTransportadora().getId().equals(java.util.Objects.requireNonNull(transportadoraId))) {
+            throw new IllegalArgumentException("Veículo não pertence a esta transportadora");
         }
 
-        bioVeiculoTransportadoraRepository.deleteById(veiculoId);
+        bioVeiculoTransportadoraRepository.deleteById(java.util.Objects.requireNonNull(veiculoId));
     }
 
     // ============ MÉTODOS AUXILIARES ============
@@ -253,15 +231,6 @@ public class BioTransportadoraService {
     }
 
     private void salvarVeiculo(BioTransportadora transportadora, VeiculoDTO veiculoDTO) {
-        // Validar tag obrigatória para Biometano
-        // if ("Biometano".equals(veiculoDTO.getTipoAbastecimento())) {
-        //     if (veiculoDTO.getTag() == null || veiculoDTO.getTag().trim().isEmpty()) {
-        //         throw new RuntimeException("TAG é obrigatória quando o tipo de abastecimento é Biometano");
-        //     }
-        //     if (veiculoDTO.getTag().length() != 16) {
-        //         throw new RuntimeException("TAG deve ter exatamente 16 caracteres");
-        //     }
-        // }
 
         BioVeiculoTransportadora veiculo = new BioVeiculoTransportadora();
         veiculo.setBioTransportadora(transportadora);
@@ -269,7 +238,6 @@ public class BioTransportadoraService {
         veiculo.setCapacidade(veiculoDTO.getCapacidade());
         veiculo.setPlaca(veiculoDTO.getPlaca());
         veiculo.setTipoAbastecimento(veiculoDTO.getTipoAbastecimento());
-        // veiculo.setTag(veiculoDTO.getTag());
         veiculo.setCriadoEm(LocalDateTime.now());
         veiculo.setAtualizadoEm(LocalDateTime.now());
 
@@ -337,7 +305,6 @@ public class BioTransportadoraService {
         dto.setCapacidade(veiculo.getCapacidade());
         dto.setPlaca(veiculo.getPlaca());
         dto.setTipoAbastecimento(veiculo.getTipoAbastecimento());
-        // dto.setTag(veiculo.getTag());
         return dto;
     }
 }
