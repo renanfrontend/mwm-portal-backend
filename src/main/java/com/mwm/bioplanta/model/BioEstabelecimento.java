@@ -32,6 +32,7 @@ public class BioEstabelecimento {
 
     @OneToMany(mappedBy = "bioEstabelecimento", fetch = FetchType.LAZY)
     @Schema(description = "Produções associadas ao estabelecimento")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<BioProducao> bioProducao;
 
     @Column(name = "codigo_estabelecimento")
