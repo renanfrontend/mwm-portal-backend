@@ -53,7 +53,7 @@ public class ProdutorDetalheService {
                 .distanciaKm(estabelecimento.getBioProdutor() != null ? estabelecimento.getBioProdutor().getDistanciaKm() : null)
                 .responsavel(estabelecimento.getResponsavel())
                 .restricoes(estabelecimento.getRestricoes())
-                .localizacao(estabelecimento.getLocalizacaoLink()) // Link de localização
+                .localizacao(estabelecimento.getEndereco()) // Ajustado para pegar o endereço (localização) corretamente
                 .numeroEstabelecimento(estabelecimento.getNumeroEstabelecimento())
                 .numeroPropriedade(estabelecimento.getNumeroPropriedade())
                 .build();

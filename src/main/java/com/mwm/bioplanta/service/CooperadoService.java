@@ -128,11 +128,23 @@ public class CooperadoService {
         estabelecimento.setNome(dto.getNomeCooperado() + " - " + (dto.getNumPropriedade() != null ? dto.getNumPropriedade() : ""));
         estabelecimento.setEndereco(dto.getLocalizacao() != null ? dto.getLocalizacao() : dto.getMunicipio());
         estabelecimento.setResponsavel(dto.getResponsavel());
-        // estabelecimento.setDistancia(dto.getDistancia()); // Campo distancia removido do DTO, ajuste se necessário
+        
+        // CORREÇÃO: Receber e salvar a distância já na criação
+        if (dto.getDistanciaKm() != null) {
+            String distFormatada = dto.getDistanciaKm().toString() + " Km";
+            estabelecimento.setDistancia(distFormatada);
+        }
+        
         estabelecimento.setRestricoes(dto.getRestricoes());
         estabelecimento.setStatus("A");
         estabelecimento.setLatitude(dto.getLatitude());
         estabelecimento.setLongitude(dto.getLongitude());
+        
+        // CORREÇÃO: Salvar a distância no estabelecimento E no produtor para garantir compatibilidade
+        // O frontend lê prioritariamente do estabelecimento
+        if (dto.getDistanciaKm() != null) {
+            produtor.setDistanciaKm(dto.getDistanciaKm());
+        }
         
         estabelecimento.setCriadoEm(LocalDateTime.now());
         estabelecimento.setAtualizadoEm(LocalDateTime.now());
@@ -219,12 +231,40 @@ public class CooperadoService {
                         dto.setVolLagoas("0");
                     }
                     
-                    dto.setDistancia(e.getDistancia());
+                    // Lógica robusta para definir distância
+                    String distanciaFinal = "-";
+                    String distEst = e.getDistancia();
+                    java.math.BigDecimal distProd = e.getBioProdutor() != null ? e.getBioProdutor().getDistanciaKm() : null;
+
+                    // LOG EXTREMO para depurar
+                    logger.info("DEBUG PRODUTOR ID {}: Nome={}, DistanciaEstab={}, DistanciaProdutor={}", 
+                        e.getId(), 
+                        e.getBioProdutor() != null ? e.getBioProdutor().getNome() : "SEM PRODUTOR",
+                        distEst, 
+                        distProd
+                    );
+
+                    // Prioriza BioEstabelecimento se tiver valor válido
+                    if (distEst != null && !distEst.trim().isEmpty() && !distEst.trim().equals("-") && !distEst.trim().equals("0")) {
+                        distanciaFinal = distEst;
+                    } 
+                    // Fallback para BioProdutor
+                    else if (distProd != null) {
+                        distanciaFinal = distProd.toString() + " Km"; // Adiciona " Km" para ficar igual ao padrão visual
+                    }
+                    
+                    dto.setDistancia(distanciaFinal);
                     dto.setRestricoesOperacionais(e.getRestricoes());
                     
                     return dto;
                 })
                 .collect(Collectors.toList());
+
+        // DEBUG: Imprimir no log o que está sendo retornado
+        if (!items.isEmpty()) {
+            logger.info("DEBUG - Exemplo de ProdutorDTO enviado: Nome={}, Distancia={}", 
+                items.get(0).getNomeProdutor(), items.get(0).getDistancia());
+        }
 
         // Aplicar paginação em memória (para dados pequenos)
         int start = (page - 1) * pageSize;
@@ -294,6 +334,20 @@ public class CooperadoService {
         estabelecimento.setRestricoes(dto.getRestricoes());
         estabelecimento.setLatitude(dto.getLatitude());
         estabelecimento.setLongitude(dto.getLongitude());
+        
+        // CORREÇÃO: Salvar a distância no estabelecimento E no produtor para garantir compatibilidade
+        // O frontend lê prioritariamente do estabelecimento
+        if (dto.getDistanciaKm() != null) {
+            String distFormatada = dto.getDistanciaKm().toString() + " Km";
+            estabelecimento.setDistancia(distFormatada);
+            produtor.setDistanciaKm(dto.getDistanciaKm());
+        } else {
+            // Se veio nulo no DTO, tenta manter o que já tinha no produtor se não foi enviado
+            // Mas se for edição explícita, pode ser que queira limpar. 
+            // Vamos assumir que se veio null no DTO, não mexe no banco a menos que seja um update patch.
+            // Aqui estamos num update full praticamente.
+        }
+
         estabelecimento.setAtualizadoEm(LocalDateTime.now());
         
         estabelecimento = bioEstabelecimentoRepository.save(estabelecimento);

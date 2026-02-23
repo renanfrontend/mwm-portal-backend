@@ -10,10 +10,16 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import java.time.LocalDateTime;
+
 public interface BioAgendaPlanejadaRepository extends JpaRepository<BioAgendaPlanejada, Long> {
-    Optional<BioAgendaPlanejada> findByIdFiliadaAndIdEstabelecimentoAndDataAgendada(Long idFiliada,
-                                                                                    Long idEstabelecimento,
-                                                                                    LocalDate dataAgendada);
+    
+    @Modifying
+    @Query("DELETE FROM BioAgendaPlanejada b WHERE b.idEstabelecimento = :idEstabelecimento AND b.dataAgendada = :dataAgendada")
+    void deleteByIdEstabelecimentoAndDataAgendada(Long idEstabelecimento, LocalDate dataAgendada);
+    
+    Optional<BioAgendaPlanejada> findByIdEstabelecimentoAndDataAgendada(Long idEstabelecimento, LocalDate dataAgendada);
+
 
     List<BioAgendaPlanejada> findByIdBioplantaAndIdFiliadaAndDataAgendadaBetween(Long idBioplanta,
                                                                                 Long idFiliada,
