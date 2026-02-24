@@ -11,9 +11,10 @@ public interface BioEstabelecimentoRepository extends JpaRepository<BioEstabelec
     boolean existsByNumeroEstabelecimento(String numeroEstabelecimento);
     boolean existsByNumeroPropriedade(String numeroPropriedade);
     
-    @Query("SELECT e FROM BioEstabelecimento e " +
-           "JOIN FETCH e.bioProdutor p " +
-           "JOIN p.bioFiliada f " +
-           "WHERE :filiadaId IS NULL OR f.id = :filiadaId")
-    List<BioEstabelecimento> findByFiliada(@Param("filiadaId") Long filiadaId);
+        @Query("SELECT e FROM BioEstabelecimento e " +
+            "JOIN FETCH e.bioProdutor p " +
+            "JOIN p.bioFiliada f " +
+            "WHERE (:filiadaId IS NULL OR f.id = :filiadaId) " +
+            "AND p.status = 'A'")
+        List<BioEstabelecimento> findByFiliada(@Param("filiadaId") Long filiadaId);
 }

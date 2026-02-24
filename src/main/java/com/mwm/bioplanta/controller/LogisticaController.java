@@ -20,6 +20,16 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "Logística", description = "Gerenciamento de produtores e logística.")
 
 public class LogisticaController {
+    @DeleteMapping("/produtores/{id}")
+    @Operation(summary = "Inativar produtor (status = 'I')")
+    public ResponseEntity<?> inativarProdutor(@PathVariable Long id) {
+        try {
+            cooperadoService.inativarProdutor(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
+        }
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(LogisticaController.class);
 

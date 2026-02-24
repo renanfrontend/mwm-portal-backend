@@ -107,7 +107,7 @@ public class BioTransportadoraService {
         if (search != null && !search.trim().isEmpty()) {
             resultado = bioTransportadoraRepository.buscar(search.trim(), pageable);
         } else {
-            resultado = bioTransportadoraRepository.findAll(pageable);
+            resultado = bioTransportadoraRepository.findAllAtivas(pageable);
         }
 
         List<TransportadoraListItemDTO> items = resultado.getContent().stream()
@@ -128,15 +128,11 @@ public class BioTransportadoraService {
      */
     @Transactional
     public void deletar(Long id) {
-        if (!bioTransportadoraRepository.existsById(java.util.Objects.requireNonNull(id))) {
-            throw new IllegalArgumentException(TRANSPORTADORA_NAO_ENCONTRADA + id);
-        }
-
-        // Deletar veículos associados
-        List<BioVeiculoTransportadora> veiculos = bioVeiculoTransportadoraRepository.findByBioTransportadoraId(id);
-        bioVeiculoTransportadoraRepository.deleteAll(java.util.Objects.requireNonNull(veiculos));
-
-        bioTransportadoraRepository.deleteById(java.util.Objects.requireNonNull(id));
+        BioTransportadora transportadora = bioTransportadoraRepository.findById(java.util.Objects.requireNonNull(id))
+            .orElseThrow(() -> new IllegalArgumentException(TRANSPORTADORA_NAO_ENCONTRADA + id));
+        transportadora.setStatus("Inativo");
+        transportadora.setAtualizadoEm(LocalDateTime.now());
+        bioTransportadoraRepository.save(transportadora);
     }
 
     /**

@@ -19,6 +19,14 @@ import java.util.stream.Collectors;
 
 @Service
 public class CooperadoService {
+    @Transactional
+    public void inativarProdutor(Long id) {
+        BioProdutor produtor = bioProdutorRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Produtor não encontrado com ID: " + id));
+        produtor.setStatus("I");
+        produtor.setAtualizadoEm(LocalDateTime.now());
+        bioProdutorRepository.save(produtor);
+    }
 
     private static final Logger logger = LoggerFactory.getLogger(CooperadoService.class);
 
