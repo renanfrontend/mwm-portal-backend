@@ -58,9 +58,11 @@ public class CooperadoService {
     public BioEstabelecimento criarCooperado(CooperadoCreateDTO dto) {
         logger.info("Iniciando criação de cooperado: {}", dto.getNomeCooperado());
         
-        // 1. Buscar BioTransportadora
-        BioTransportadora transportadora = bioTransportadoraRepository.findById(dto.getTransportadoraId())
-            .orElseThrow(() -> new RuntimeException("Transportadora não encontrada"));
+        // 1. Buscar BioTransportadora (REMOVIDO A PEDIDO - DADOS FIXOS NO FRONTEND)
+        // BioTransportadora transportadora = bioTransportadoraRepository.findById(dto.getTransportadoraId())
+        //    .orElseThrow(() -> new RuntimeException("Transportadora não encontrada"));
+        
+        BioTransportadora transportadora = null; // Inicializa como null, já que não será usada
 
         // 2. Buscar BioFiliada (pelo ID se fornecido, senão pelo nome da transportadora)
         BioFiliada filiada = null;
@@ -69,7 +71,11 @@ public class CooperadoService {
                 .orElseThrow(() -> new RuntimeException("Filiada informada não encontrada: " + dto.getFiliadaId()));
         } else {
              // Fallback legado: tenta achar pelo nome da transportadora
-             filiada = bioFiliadaRepository.findByNome(transportadora.getNomeFantasia());
+             // Como transportadora agora é null, isso falharia se tentasse acessar.
+             // Mas o frontend está enviando filiadaId, então deve entrar no IF acima.
+             if (transportadora != null) {
+                 filiada = bioFiliadaRepository.findByNome(transportadora.getNomeFantasia());
+             }
         }
 
         if (filiada == null) {
