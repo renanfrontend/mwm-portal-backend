@@ -1,3 +1,4 @@
+
 package com.mwm.bioplanta.controller;
 
 import org.slf4j.Logger;
@@ -26,6 +27,7 @@ import java.time.LocalDate;
 @Tag(name = "Agenda Planejada", description = "Gerenciamento da agenda planejada.")
 
 public class AgendaPlanejadaController {
+
 
     private static final Logger logger = LoggerFactory.getLogger(AgendaPlanejadaController.class);
 

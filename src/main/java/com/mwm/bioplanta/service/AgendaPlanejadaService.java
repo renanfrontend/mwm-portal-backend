@@ -1,3 +1,4 @@
+// ...existing code...
 package com.mwm.bioplanta.service;
 
 import com.mwm.bioplanta.dto.AgendaPlanejadaDiaDTO;
@@ -37,6 +38,7 @@ public class AgendaPlanejadaService {
         this.bioEstabelecimentoRepository = bioEstabelecimentoRepository;
     }
 
+
     @Transactional(readOnly = true)
     public boolean verificarDadosSemana(Long idBioplanta, Long idFiliada, LocalDate dataInicio, LocalDate dataFim) {
         long count = bioAgendaPlanejadaRepository.countViagensReais(
@@ -50,61 +52,78 @@ public class AgendaPlanejadaService {
             throw new IllegalArgumentException("Datas de origem e destino são obrigatórias");
         }
         
+
         LocalDate inicioOrigem = LocalDate.parse(dto.getDataInicioOrigem());
         LocalDate inicioDestino = LocalDate.parse(dto.getDataInicioDestino());
-        
         LocalDate fimOrigem = inicioOrigem.plusDays(6); // Sábado da semana origem
         LocalDate fimDestino = inicioDestino.plusDays(6);
 
-        // 1. Busca dados da origem (filtrando por IDs selecionados se houver)
-        List<Long> idsEstabelecimentos = (dto.getIdsEstabelecimentos() == null || dto.getIdsEstabelecimentos().isEmpty()) 
-                ? null : dto.getIdsEstabelecimentos();
-        
-        List<BioAgendaPlanejada> listaOrigem = bioAgendaPlanejadaRepository.findParaCopia(
-                dto.getIdBioplanta(),
-                dto.getIdFiliada(),
-                inicioOrigem,
-                fimOrigem,
-                idsEstabelecimentos
-        );
-
-        if (listaOrigem.isEmpty()) {
-            log.warn("Nenhum dado encontrado para copiar na semana de origem: {}", inicioOrigem);
-            return;
+        // NOVA REGRA: só permite cópia se houver IDs selecionados
+        List<Long> idsEstabelecimentos = dto.getIdsEstabelecimentos();
+        if (idsEstabelecimentos == null || idsEstabelecimentos.isEmpty()) {
+            log.warn("Cópia de agenda abortada: nenhum estabelecimento selecionado no grid.");
+            throw new IllegalArgumentException("Selecione ao menos um estabelecimento para copiar a agenda.");
         }
 
-        // 2. LIMPA TODA a semana destino EM LOTE antes de copiar (evita constraint duplicada)
-        int deletados = bioAgendaPlanejadaRepository.deleteByPeriodo(
-                dto.getIdBioplanta(),
-                dto.getIdFiliada(),
-                inicioDestino,
-                fimDestino
+        List<BioAgendaPlanejada> registrosOrigem = bioAgendaPlanejadaRepository.findParaCopia(
+            dto.getIdBioplanta(),
+            dto.getIdFiliada(),
+            inicioOrigem,
+            fimOrigem,
+            idsEstabelecimentos
         );
-        
-        log.info("Deletados {} registros no destino. Copiando {} registros da semana {} para {}", 
-                deletados, listaOrigem.size(), inicioOrigem, inicioDestino);
 
-        // 3. Copia os registros
-        for (BioAgendaPlanejada origem : listaOrigem) {
-            // Calcula dia correspondente na semana destino (preserva dia da semana: Seg -> Seg)
+        // Limpa toda a semana destino antes de copiar
+        int deletados = bioAgendaPlanejadaRepository.deleteByPeriodo(
+            dto.getIdBioplanta(),
+            dto.getIdFiliada(),
+            inicioDestino,
+            fimDestino
+        );
+        log.info("Deletados {} registros no destino. Copiando {} registros da semana {} para {}", 
+            deletados, registrosOrigem.size(), inicioOrigem, inicioDestino);
+
+        // Copia registros planejados do período de origem
+        for (BioAgendaPlanejada origem : registrosOrigem) {
             long diasDiferenca = ChronoUnit.DAYS.between(inicioOrigem, origem.getDataAgendada());
             LocalDate novaData = inicioDestino.plusDays(diasDiferenca);
-            
-            // Cria e salva o novo registro
-            BioAgendaPlanejada destino = new BioAgendaPlanejada();
-            destino.setIdBioplanta(origem.getIdBioplanta());
-            destino.setIdFiliada(origem.getIdFiliada());
-            destino.setIdEstabelecimento(origem.getIdEstabelecimento());
-            destino.setProdutor(origem.getProdutor());
-            destino.setDistanciaKm(origem.getDistanciaKm());
-            destino.setTransportadora(origem.getTransportadora());
-            destino.setQtdViagens(origem.getQtdViagens());
-            
-            destino.setDataAgendada(novaData);
-            destino.setCriadoEm(LocalDateTime.now());
-            destino.setAtualizadoEm(LocalDateTime.now());
-            
-            bioAgendaPlanejadaRepository.save(destino);
+
+            BioAgendaPlanejada novo = new BioAgendaPlanejada();
+            novo.setIdBioplanta(origem.getIdBioplanta());
+            novo.setIdFiliada(origem.getIdFiliada());
+            novo.setIdEstabelecimento(origem.getIdEstabelecimento());
+            novo.setProdutor(origem.getProdutor());
+            novo.setDistanciaKm(origem.getDistanciaKm());
+            novo.setTransportadora(origem.getTransportadora());
+            novo.setQtdViagens(origem.getQtdViagens());
+            novo.setDataAgendada(novaData);
+            novo.setCriadoEm(LocalDateTime.now());
+            novo.setAtualizadoEm(LocalDateTime.now());
+            bioAgendaPlanejadaRepository.save(novo);
+        }
+
+        // Para cada estabelecimento ativo selecionado, se não tem registro planejado no período de origem, cria registro básico na semana destino
+        List<BioEstabelecimento> estabelecimentosAtivos = bioEstabelecimentoRepository.findByFiliada(dto.getIdFiliada());
+        for (Long idEstab : idsEstabelecimentos) {
+            boolean jaCopiado = registrosOrigem.stream().anyMatch(r -> r.getIdEstabelecimento().equals(idEstab));
+            if (!jaCopiado) {
+                // Buscar dados do estabelecimento
+                BioEstabelecimento estab = estabelecimentosAtivos.stream().filter(e -> e.getId().equals(idEstab)).findFirst().orElse(null);
+                if (estab != null) {
+                    BioAgendaPlanejada novo = new BioAgendaPlanejada();
+                    novo.setIdBioplanta(dto.getIdBioplanta());
+                    novo.setIdFiliada(dto.getIdFiliada());
+                    novo.setIdEstabelecimento(estab.getId());
+                    novo.setProdutor(estab.getBioProdutor() != null ? estab.getBioProdutor().getNome() : "Produtor Desconhecido");
+                    novo.setDistanciaKm(estab.getBioProdutor() != null && estab.getBioProdutor().getDistanciaKm() != null ? estab.getBioProdutor().getDistanciaKm().intValue() : 0);
+                    novo.setTransportadora(null);
+                    novo.setQtdViagens(0);
+                    novo.setDataAgendada(inicioDestino);
+                    novo.setCriadoEm(LocalDateTime.now());
+                    novo.setAtualizadoEm(LocalDateTime.now());
+                    bioAgendaPlanejadaRepository.save(novo);
+                }
+            }
         }
     }
 
@@ -149,50 +168,65 @@ public class AgendaPlanejadaService {
                                                            LocalDate dataFim) {
         validarParametrosSemana(idBioplanta, idFiliada, dataInicio, dataFim);
 
-        List<BioEstabelecimento> estabelecimentos = bioEstabelecimentoRepository.findByFiliada(idFiliada);
-        log.info("Encontrados {} estabelecimentos para filiada {}", estabelecimentos.size(), idFiliada);
-        List<BioAgendaPlanejada> registros = bioAgendaPlanejadaRepository
-                .findByIdBioplantaAndIdFiliadaAndDataAgendadaBetween(idBioplanta, idFiliada, dataInicio, dataFim);
+                                                        // Busca todos os registros de agenda planejada no período
+                                                        List<BioAgendaPlanejada> registros = bioAgendaPlanejadaRepository
+                                                                .findByIdBioplantaAndIdFiliadaAndDataAgendadaBetween(idBioplanta, idFiliada, dataInicio, dataFim);
 
-        Map<Long, Map<LocalDate, BioAgendaPlanejada>> registrosPorEstabelecimento = new HashMap<>();
-        for (BioAgendaPlanejada registro : registros) {
-            registrosPorEstabelecimento
-                    .computeIfAbsent(registro.getIdEstabelecimento(), key -> new HashMap<>())
-                    .put(registro.getDataAgendada(), registro);
+                                                        // Se houver registros de agenda planejada, monta a lista de estabelecimentos a partir deles
+                                                        Map<Long, BioEstabelecimento> estabelecimentosMap = new HashMap<>();
+                                                        for (BioAgendaPlanejada registro : registros) {
+                                                            if (!estabelecimentosMap.containsKey(registro.getIdEstabelecimento())) {
+                                                                bioEstabelecimentoRepository.findById(registro.getIdEstabelecimento())
+                                                                    .ifPresent(estab -> estabelecimentosMap.put(estab.getId(), estab));
+                                                            }
+                                                        }
+                                                        List<BioEstabelecimento> estabelecimentos;
+                                                        if (!estabelecimentosMap.isEmpty()) {
+                                                            estabelecimentos = new ArrayList<>(estabelecimentosMap.values());
+                                                        } else {
+                                                            // fallback: se não houver registros planejados, retorna ativos normalmente
+                                                            estabelecimentos = bioEstabelecimentoRepository.findByFiliada(idFiliada);
+                                                        }
+
+                                                        Map<Long, Map<LocalDate, BioAgendaPlanejada>> registrosPorEstabelecimento = new HashMap<>();
+                                                        for (BioAgendaPlanejada registro : registros) {
+                                                            registrosPorEstabelecimento
+                                                                    .computeIfAbsent(registro.getIdEstabelecimento(), key -> new HashMap<>())
+                                                                    .put(registro.getDataAgendada(), registro);
+                                                        }
+
+                                                        List<LocalDate> dias = montarDias(dataInicio, dataFim);
+                                                        List<AgendaPlanejadaSemanaLinhaDTO> linhas = new ArrayList<>();
+
+                                                        for (BioEstabelecimento estabelecimento : estabelecimentos) {
+                                                            try {
+                                                                Long idEstabelecimento = estabelecimento.getId();
+                                                                Map<LocalDate, BioAgendaPlanejada> registroPorDia = registrosPorEstabelecimento.get(idEstabelecimento);
+
+                                                                AgendaPlanejadaSemanaLinhaDTO linha = new AgendaPlanejadaSemanaLinhaDTO();
+                                                                linha.setIdEstabelecimento(idEstabelecimento);
+                                                                String nomeProdutor = (estabelecimento.getBioProdutor() != null)
+                                                                        ? estabelecimento.getBioProdutor().getNome()
+                                                                        : "Produtor Desconhecido";
+                                                                linha.setProdutor(nomeProdutor);
+                                                                java.math.BigDecimal distanciaProdutor = estabelecimento.getBioProdutor() != null ? estabelecimento.getBioProdutor().getDistanciaKm() : null;
+                                                                linha.setDistanciaKm(distanciaProdutor != null ? distanciaProdutor.intValue() : 0);
+                                                                linha.setTransportadora(obterTransportadora(registroPorDia));
+                                                                linha.setDias(montarDiasAgenda(dias, registroPorDia));
+
+                                                                linhas.add(linha);
+                                                            } catch (Exception e) {
+                                                                log.error("Erro ao processar estabelecimento {}: {}", estabelecimento.getId(), e.getMessage(), e);
+                                                            }
+                                                        }
+
+                                AgendaPlanejadaSemanaResponseDTO response = new AgendaPlanejadaSemanaResponseDTO();
+                                response.setDataInicio(dataInicio);
+                                response.setDataFim(dataFim);
+                                response.setLinhas(linhas);
+                                return response;
+
         }
-
-        List<LocalDate> dias = montarDias(dataInicio, dataFim);
-        List<AgendaPlanejadaSemanaLinhaDTO> linhas = new ArrayList<>();
-
-        for (BioEstabelecimento estabelecimento : estabelecimentos) {
-            try {
-                Long idEstabelecimento = estabelecimento.getId();
-                Map<LocalDate, BioAgendaPlanejada> registroPorDia = registrosPorEstabelecimento.get(idEstabelecimento);
-
-                AgendaPlanejadaSemanaLinhaDTO linha = new AgendaPlanejadaSemanaLinhaDTO();
-                linha.setIdEstabelecimento(idEstabelecimento);
-                
-                String nomeProdutor = (estabelecimento.getBioProdutor() != null) 
-                    ? estabelecimento.getBioProdutor().getNome() 
-                    : "Produtor Desconhecido";
-                linha.setProdutor(nomeProdutor);
-                java.math.BigDecimal distanciaProdutor = estabelecimento.getBioProdutor() != null ? estabelecimento.getBioProdutor().getDistanciaKm() : null;
-                linha.setDistanciaKm(distanciaProdutor != null ? distanciaProdutor.intValue() : 0);
-                linha.setTransportadora(obterTransportadora(registroPorDia));
-                linha.setDias(montarDiasAgenda(dias, registroPorDia));
-
-                linhas.add(linha);
-            } catch (Exception e) {
-                log.error("Erro ao processar estabelecimento {}: {}", estabelecimento.getId(), e.getMessage(), e);
-            }
-        }
-
-        AgendaPlanejadaSemanaResponseDTO response = new AgendaPlanejadaSemanaResponseDTO();
-        response.setDataInicio(dataInicio);
-        response.setDataFim(dataFim);
-        response.setLinhas(linhas);
-        return response;
-    }
 
     // Removendo @Transactional global do método para evitar UnexpectedRollbackException do Spring
     // Gerenciaremos as exceções manualmente para não retornar erro 400 para a tela
@@ -232,10 +266,10 @@ public class AgendaPlanejadaService {
                 } catch (Exception e) {
                     log.error("Erro ao inserir novo registro de agenda: {}. Tentando update de recuperação.", e.getMessage());
                     // Fallback final: Tenta atualizar se insert falhou (caso o delete tenha falhado silenciosamente)
-                     try {
+                    try {
                         Optional<BioAgendaPlanejada> fantasma = bioAgendaPlanejadaRepository
                                 .findByIdEstabelecimentoAndDataAgendada(dto.getIdEstabelecimento(), dto.getDataAgendada());
-                        
+
                         if (fantasma.isPresent()) {
                             BioAgendaPlanejada r = fantasma.get();
                             r.setIdBioplanta(dto.getIdBioplanta());
@@ -351,4 +385,5 @@ public class AgendaPlanejadaService {
             return 0;
         }
     }
+
 }
