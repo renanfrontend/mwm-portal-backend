@@ -14,11 +14,7 @@ public class CooperadoCreateDTO {
     @Schema(description = "Matrícula do cooperado", example = "123456", requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer matricula;
 
-    @Schema(description = "ID da transportadora selecionada", example = "1")
-    private Long transportadoraId;
 
-    @Schema(description = "ID do tipo de veículo", example = "1")
-    private Long tipoVeiculoId;
 
     @Schema(description = "Nome do cooperado/estabelecimento", example = "João Silva", requiredMode = Schema.RequiredMode.REQUIRED)
     private String nomeCooperado;
@@ -29,10 +25,8 @@ public class CooperadoCreateDTO {
     @Schema(description = "CPF ou CNPJ", example = "123.456.789-00")
     private String cpfCnpj;
 
-    @Schema(description = "Placa do veículo", example = "ABC-1234")
-    private String placa;
 
-    @Schema(description = "Certificado", example = "Ativo", allowableValues = {"Ativo", "Inativo"})
+    @Schema(description = "Certificado", example = "Sim", allowableValues = {"Sim", "Não"})
     private String certificado;
 
     @Schema(description = "Doam dejetos", example = "Sim", allowableValues = {"Sim", "Não"})
@@ -52,9 +46,6 @@ public class CooperadoCreateDTO {
 
     @Schema(description = "Técnico responsável", example = "Dr. José")
     private String tecnico;
-
-    @Schema(description = "Telefone", example = "45999470460")
-    private String telefone;
 
     @Schema(description = "Nº da propriedade", example = "PROP001")
     private String numPropriedade;

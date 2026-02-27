@@ -37,7 +37,7 @@ public class CooperadoItem {
 	private String tipoVeiculo;
 	@Schema(description = "Placa", example = "ABC-1D23", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String placa;
-	@Schema(description = "Certificado", example = "Ativo", requiredMode = Schema.RequiredMode.REQUIRED)
+	@Schema(description = "Certificado", example = "Sim", allowableValues = {"Sim", "Não"}, requiredMode = Schema.RequiredMode.REQUIRED)
 	private String certificado;
 	@Schema(description = "Doam Dejetos", example = "Sim", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String doamDejetos;

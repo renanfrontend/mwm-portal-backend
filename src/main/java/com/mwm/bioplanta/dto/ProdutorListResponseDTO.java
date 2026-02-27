@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ProdutorListResponseDTO {
     private Long id;
+    private Long produtorId;
+    private Long estabelecimentoId;
     private String nomeProdutor;
     private String numEstabelecimento;
     private String filiada;
@@ -16,7 +18,7 @@ public class ProdutorListResponseDTO {
     private Integer cabecasAlojadas;
     private String distancia;
     private String certificado;
-    private String participaProjeto;
+    private String doamDejetos;
     private Integer qtdLagoas;
     private String volLagoas;
     private String restricoesOperacionais;

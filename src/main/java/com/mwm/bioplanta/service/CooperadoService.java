@@ -4,10 +4,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mwm.bioplanta.dto.CooperadoCreateDTO;
+import com.mwm.bioplanta.dto.ProdutorBuscaNumEstabelecimentoResponseDTO;
+import com.mwm.bioplanta.dto.ProdutorBuscaResponseDTO;
 import com.mwm.bioplanta.dto.ProdutorListResponseDTO;
 import com.mwm.bioplanta.dto.ProdutorPageResponseDTO;
 import com.mwm.bioplanta.model.*;
 import com.mwm.bioplanta.repository.*;
+import com.mwm.bioplanta.util.SimNaoMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,17 +18,59 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
 public class CooperadoService {
     @Transactional
-    public void inativarProdutor(Long id) {
-        BioProdutor produtor = bioProdutorRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Produtor não encontrado com ID: " + id));
+    public void inativarEstabelecimentos(List<Long> estabelecimentoIds) {
+        if (estabelecimentoIds == null || estabelecimentoIds.isEmpty()) {
+            throw new RuntimeException("Informe ao menos um estabelecimento para inativação.");
+        }
+
+        for (Long idEstabelecimento : estabelecimentoIds) {
+            inativarEstabelecimento(idEstabelecimento);
+        }
+    }
+
+    @Transactional
+    public void inativarEstabelecimento(Long idEstabelecimento) {
+        BioEstabelecimento estabelecimento = bioEstabelecimentoRepository.findById(idEstabelecimento)
+            .orElseThrow(() -> new RuntimeException("Estabelecimento não encontrado com ID: " + idEstabelecimento));
+
+        estabelecimento.setStatus("I");
+        estabelecimento.setAtualizadoEm(LocalDateTime.now());
+        bioEstabelecimentoRepository.save(estabelecimento);
+
+        BioProdutor produtor = estabelecimento.getBioProdutor();
+        if (produtor == null) {
+            return;
+        }
+
+        long ativos = bioEstabelecimentoRepository.countByBioProdutorIdAndStatus(produtor.getId(), "A");
+        if (ativos == 0) {
+            produtor.setStatus("I");
+            produtor.setAtualizadoEm(LocalDateTime.now());
+            bioProdutorRepository.save(produtor);
+        }
+    }
+
+    @Transactional
+    public void inativarProdutor(Long idProdutor) {
+        BioProdutor produtor = bioProdutorRepository.findById(idProdutor)
+            .orElseThrow(() -> new RuntimeException("Produtor não encontrado com ID: " + idProdutor));
+
         produtor.setStatus("I");
         produtor.setAtualizadoEm(LocalDateTime.now());
         bioProdutorRepository.save(produtor);
+
+        List<BioEstabelecimento> estabelecimentos = bioEstabelecimentoRepository.findByBioProdutorId(idProdutor);
+        for (BioEstabelecimento estabelecimento : estabelecimentos) {
+            estabelecimento.setStatus("I");
+            estabelecimento.setAtualizadoEm(LocalDateTime.now());
+        }
+        bioEstabelecimentoRepository.saveAll(estabelecimentos);
     }
 
     private static final Logger logger = LoggerFactory.getLogger(CooperadoService.class);
@@ -57,6 +102,8 @@ public class CooperadoService {
     @Transactional
     public BioEstabelecimento criarCooperado(CooperadoCreateDTO dto) {
         logger.info("Iniciando criação de cooperado: {}", dto.getNomeCooperado());
+        String certificadoBanco = SimNaoMapper.toBanco(dto.getCertificado());
+        String doamDejetosBanco = SimNaoMapper.toBanco(dto.getDoamDejetos());
         
         // 1. Buscar BioTransportadora (REMOVIDO A PEDIDO - DADOS FIXOS NO FRONTEND)
         // BioTransportadora transportadora = bioTransportadoraRepository.findById(dto.getTransportadoraId())
@@ -91,7 +138,6 @@ public class CooperadoService {
             produtor.setBioFiliada(filiada);
             produtor.setNome(dto.getNomeCooperado());
             produtor.setCpfCnpj(dto.getCpfCnpj());
-            produtor.setTelefonePrincipal(dto.getTelefone());
             produtor.setTipoPessoa(dto.getCpfCnpj() != null && dto.getCpfCnpj().length() > 14 ? "PJ" : "PF");
             produtor.setStatus("A");
             produtor.setDataCadastro(LocalDate.now());
@@ -99,6 +145,8 @@ public class CooperadoService {
             produtor.setCriadoEm(LocalDateTime.now());
             produtor.setAtualizadoEm(LocalDateTime.now());
             produtor.setDistanciaKm(dto.getDistanciaKm());
+                produtor.setCertificado(certificadoBanco);
+                produtor.setDoamDejetos(doamDejetosBanco);
             produtor = bioProdutorRepository.save(produtor);
         } else {
             // Atualiza distância se vier preenchida
@@ -172,14 +220,13 @@ public class CooperadoService {
         producao.setAnoSafra("2024/2025"); 
         producao.setModalidadeFase(dto.getFase() != null ? dto.getFase() : "N/A");
         
-        // Opcionais
-        producao.setCertificacao(dto.getCertificado() != null && dto.getCertificado().equalsIgnoreCase("Ativo") ? "S" : "N");
-        producao.setDoacaoDejetos(dto.getDoamDejetos() != null && dto.getDoamDejetos().equalsIgnoreCase("Sim") ? "S" : "N");
+            // Ajuste: agora espera "S" ou "N" diretamente do frontend
+            producao.setCertificacao(certificadoBanco);
+            producao.setDoacaoDejetos(doamDejetosBanco);
         producao.setQuantidadeCabecas(dto.getCabecas());
         producao.setQtdLagoas(dto.getQtdLagoas());
         producao.setVolLagoas(dto.getVolLagoas());
         producao.setTecnicoResponsavel(dto.getTecnico());
-        producao.setTelefoneTecnico(dto.getTelefone());  
         producao.setDataInicioProducao(LocalDate.now());
         producao.setStatus("A");
         
@@ -191,19 +238,82 @@ public class CooperadoService {
     }
 
     @Transactional(readOnly = true)
+    public Optional<ProdutorBuscaResponseDTO> buscarProdutorPorCpfCnpj(String cpfCnpj) {
+        if (cpfCnpj == null || cpfCnpj.isBlank()) {
+            return Optional.empty();
+        }
+
+        String cpfCnpjNormalizado = cpfCnpj.replaceAll("\\D", "");
+        if (cpfCnpjNormalizado.isBlank()) {
+            return Optional.empty();
+        }
+
+        Optional<BioProdutor> produtorOpt = bioProdutorRepository.findAtivoByCpfCnpjNormalizado(cpfCnpjNormalizado);
+        if (produtorOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        BioProdutor produtor = produtorOpt.get();
+        String numEstabelecimento = bioEstabelecimentoRepository
+                .findFirstByBioProdutorIdOrderByIdAsc(produtor.getId())
+                .map(BioEstabelecimento::getNumeroEstabelecimento)
+                .orElse(null);
+
+        ProdutorBuscaResponseDTO dto = new ProdutorBuscaResponseDTO(
+                produtor.getId(),
+                produtor.getNome(),
+                numEstabelecimento,
+                cpfCnpjNormalizado
+        );
+
+        return Optional.of(dto);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<ProdutorBuscaNumEstabelecimentoResponseDTO> buscarProdutorPorNumeroEstabelecimento(String numEstabelecimento) {
+        if (numEstabelecimento == null || numEstabelecimento.isBlank()) {
+            return Optional.empty();
+        }
+
+        return bioEstabelecimentoRepository.findFirstByNumeroEstabelecimento(numEstabelecimento)
+                .map(estabelecimento -> {
+                    Long produtorId = estabelecimento.getBioProdutor() != null ? estabelecimento.getBioProdutor().getId() : null;
+                    String nomeProdutor = estabelecimento.getBioProdutor() != null ? estabelecimento.getBioProdutor().getNome() : null;
+                    return new ProdutorBuscaNumEstabelecimentoResponseDTO(
+                            produtorId,
+                            nomeProdutor,
+                            estabelecimento.getNumeroEstabelecimento(),
+                            "N. de estabelecimento já existe."
+                    );
+                });
+    }
+
+    @Transactional(readOnly = true)
     public ProdutorPageResponseDTO listarProdutores(Long plantaId, Long filiadaId, Integer page, Integer pageSize) {
         // Validação de parâmetros de paginação
         if (page == null || page < 1) page = 1;
         if (pageSize == null || pageSize < 1) pageSize = 10;
 
+        if (plantaId == null || filiadaId == null) {
+            ProdutorPageResponseDTO response = new ProdutorPageResponseDTO();
+            response.setPage(page);
+            response.setPageSize(pageSize);
+            response.setTotal(0L);
+            response.setItems(List.of());
+            return response;
+        }
+
         // Buscar estabelecimentos (produtores) com filtros
-        List<BioEstabelecimento> estabelecimentos = bioEstabelecimentoRepository.findByFiliada(filiadaId);
+        List<BioEstabelecimento> estabelecimentos = bioEstabelecimentoRepository.findByPlantaAndFiliada(plantaId, filiadaId);
 
         // Converter para DTOs
         List<ProdutorListResponseDTO> items = estabelecimentos.stream()
                 .map(e -> {
                     ProdutorListResponseDTO dto = new ProdutorListResponseDTO();
-                    dto.setId(e.getId());
+                    Long produtorId = e.getBioProdutor() != null ? e.getBioProdutor().getId() : null;
+                    dto.setId(produtorId);
+                    dto.setProdutorId(produtorId);
+                    dto.setEstabelecimentoId(e.getId());
                     
                     if (e.getBioProdutor() != null) {
                         dto.setNomeProdutor(e.getBioProdutor().getNome());
@@ -225,24 +335,22 @@ public class CooperadoService {
                          producao = e.getBioProducao().get(0);
                     }
                     
-                    if (producao != null) {
-                        dto.setModalidade(producao.getModalidadeFase());
-                        dto.setCabecasAlojadas(producao.getQuantidadeCabecas() != null 
-                                ? producao.getQuantidadeCabecas().intValue() 
-                                : 0);
-                        dto.setCertificado(producao.getCertificacao() != null && producao.getCertificacao().equals("S") 
-                                ? "Sim" 
-                                : "Não");
-                        dto.setParticipaProjeto("Sim"); // Assumindo que se existe registro, participa
-                        dto.setQtdLagoas(producao.getQtdLagoas());
-                        dto.setVolLagoas(producao.getVolLagoas());
+                        if (producao != null) {
+                            dto.setModalidade(producao.getModalidadeFase());
+                            dto.setCabecasAlojadas(producao.getQuantidadeCabecas() != null 
+                                    ? producao.getQuantidadeCabecas().intValue() 
+                                    : 0);
+                                dto.setCertificado(SimNaoMapper.toDescricao(producao.getCertificacao()));
+                                dto.setDoamDejetos(SimNaoMapper.toDescricao(producao.getDoacaoDejetos()));
+                            dto.setQtdLagoas(producao.getQtdLagoas());
+                            dto.setVolLagoas(producao.getVolLagoas());
                     } else {
                         dto.setModalidade("N/A");
                         dto.setCabecasAlojadas(0);
-                        dto.setCertificado("Não");
-                        dto.setParticipaProjeto("Não");
-                        dto.setQtdLagoas(0);
-                        dto.setVolLagoas("0");
+                        dto.setCertificado("");
+                            dto.setDoamDejetos("");
+                            dto.setQtdLagoas(0);
+                            dto.setVolLagoas("0");
                     }
                     
                     // Lógica robusta para definir distância
@@ -305,18 +413,21 @@ public class CooperadoService {
     public BioEstabelecimento atualizarCooperado(Long id, CooperadoCreateDTO dto) {
         logger.info("Iniciando atualização de cooperado ID: {}", id);
 
-        // 1. Buscar o Estabelecimento Existente
+        // 1. Buscar o Estabelecimento pelo ID do Estabelecimento
         BioEstabelecimento estabelecimento = bioEstabelecimentoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Estabelecimento não encontrado com ID: " + id));
+            .orElseThrow(() -> new RuntimeException("Estabelecimento não encontrado com ID: " + id));
 
         BioProdutor produtor = estabelecimento.getBioProdutor();
+        String certificadoBanco = SimNaoMapper.toBanco(dto.getCertificado());
+        String doamDejetosBanco = SimNaoMapper.toBanco(dto.getDoamDejetos());
 
         // 2. Atualizar Dados do Produtor
         produtor.setNome(dto.getNomeCooperado());
         produtor.setCpfCnpj(dto.getCpfCnpj());
-        produtor.setTelefonePrincipal(dto.getTelefone());
         produtor.setTipoPessoa(dto.getCpfCnpj() != null && dto.getCpfCnpj().length() > 14 ? "PJ" : "PF");
         produtor.setAtualizadoEm(LocalDateTime.now());
+            produtor.setCertificado(certificadoBanco);
+            produtor.setDoamDejetos(doamDejetosBanco);
         
         // Se a filiada mudou
         if (dto.getFiliadaId() != null && !dto.getFiliadaId().equals(produtor.getBioFiliada().getId())) {
@@ -380,13 +491,12 @@ public class CooperadoService {
         }
 
         producao.setModalidadeFase(dto.getFase() != null ? dto.getFase() : "N/A");
-        producao.setCertificacao(dto.getCertificado() != null && dto.getCertificado().equalsIgnoreCase("Ativo") ? "S" : "N");
-        producao.setDoacaoDejetos(dto.getDoamDejetos() != null && dto.getDoamDejetos().equalsIgnoreCase("Sim") ? "S" : "N");
+        producao.setCertificacao(certificadoBanco);
+        producao.setDoacaoDejetos(doamDejetosBanco);
         producao.setQuantidadeCabecas(dto.getCabecas());
         producao.setQtdLagoas(dto.getQtdLagoas());
         producao.setVolLagoas(dto.getVolLagoas());
         producao.setTecnicoResponsavel(dto.getTecnico());
-        producao.setTelefoneTecnico(dto.getTelefone());
         producao.setAtualizadoEm(LocalDateTime.now());
 
         bioProducaoRepository.save(producao);

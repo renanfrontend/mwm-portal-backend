@@ -4,6 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.mwm.bioplanta.dto.CooperadoCreateDTO;
+import com.mwm.bioplanta.dto.ProdutorBuscaNumEstabelecimentoResponseDTO;
+import com.mwm.bioplanta.dto.ProdutorBuscaResponseDTO;
+import com.mwm.bioplanta.dto.ProdutorExclusaoLoteRequestDTO;
 import com.mwm.bioplanta.dto.ProdutorDetalheDTO;
 import com.mwm.bioplanta.dto.ProdutorPageResponseDTO;
 import com.mwm.bioplanta.model.BioEstabelecimento;
@@ -11,7 +14,6 @@ import com.mwm.bioplanta.service.CooperadoService;
 import com.mwm.bioplanta.service.ProdutorDetalheService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,10 +23,21 @@ import org.springframework.web.bind.annotation.*;
 
 public class LogisticaController {
     @DeleteMapping("/produtores/{id}")
-    @Operation(summary = "Inativar produtor (status = 'I')")
+    @Operation(summary = "Inativar estabelecimento por ID e, se for o último ativo, inativar também o produtor")
     public ResponseEntity<?> inativarProdutor(@PathVariable Long id) {
         try {
-            cooperadoService.inativarProdutor(id);
+            cooperadoService.inativarEstabelecimento(id);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
+        }
+    }
+
+    @PostMapping("/produtores/exclusao-lote")
+    @Operation(summary = "Inativar um ou mais estabelecimentos e, quando aplicável, inativar também o produtor")
+    public ResponseEntity<?> inativarProdutoresEmLote(@RequestBody ProdutorExclusaoLoteRequestDTO request) {
+        try {
+            cooperadoService.inativarEstabelecimentos(request.getEstabelecimentoIds());
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
@@ -61,6 +74,28 @@ public class LogisticaController {
             e.printStackTrace();
             return ResponseEntity.badRequest().body("Erro: " + e.getMessage());
         }
+    }
+
+    @GetMapping(value = "/produtores/busca", params = "numEstabelecimento")
+    @Operation(summary = "Buscar produtor por número de estabelecimento")
+    public ResponseEntity<ProdutorBuscaNumEstabelecimentoResponseDTO> buscarProdutorPorNumeroEstabelecimento(
+            @RequestParam String numEstabelecimento) {
+        return cooperadoService.buscarProdutorPorNumeroEstabelecimento(numEstabelecimento)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping(value = "/produtores/busca", params = "cpfCnpj")
+    @Operation(summary = "Buscar produtor por CPF/CNPJ")
+    public ResponseEntity<ProdutorBuscaResponseDTO> buscarProdutorPorCpfCnpj(@RequestParam String cpfCnpj) {
+        String cpfCnpjNormalizado = cpfCnpj == null ? "" : cpfCnpj.replaceAll("\\D", "");
+        if (cpfCnpjNormalizado.length() != 11 && cpfCnpjNormalizado.length() != 14) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return cooperadoService.buscarProdutorPorCpfCnpj(cpfCnpjNormalizado)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/produtores")

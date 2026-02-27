@@ -6,6 +6,7 @@ import com.mwm.bioplanta.model.BioEstabelecimento;
 import com.mwm.bioplanta.model.BioProducao;
 import com.mwm.bioplanta.model.BioProdutor;
 import com.mwm.bioplanta.repository.BioEstabelecimentoRepository;
+import com.mwm.bioplanta.util.SimNaoMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +33,8 @@ public class ProdutorDetalheService {
      */
     @Transactional(readOnly = true)
     public Optional<ProdutorDetalheDTO> buscarDetalhePorId(Long id) {
-        Optional<BioEstabelecimento> estabelecimentoOpt = estabelecimentoRepository.findById(java.util.Objects.requireNonNull(id));
+        Optional<BioEstabelecimento> estabelecimentoOpt = estabelecimentoRepository
+                .findById(java.util.Objects.requireNonNull(id));
         
         if (estabelecimentoOpt.isEmpty()) {
             return Optional.empty();
@@ -42,7 +44,7 @@ public class ProdutorDetalheService {
         
         // Mapear dados do estabelecimento
         ProdutorDetalheDTO dto = ProdutorDetalheDTO.builder()
-                .id(estabelecimento.getId())
+            .id(estabelecimento.getId())
                 .matricula(estabelecimento.getMatricula())
                 .nome(estabelecimento.getNome())
                 .municipio(estabelecimento.getMunicipio())
@@ -69,8 +71,8 @@ public class ProdutorDetalheService {
                 dto.setVolLagoas(producaoRecente.getVolLagoas());
                 dto.setFase(producaoRecente.getModalidadeFase());
                 dto.setCabecas(producaoRecente.getQuantidadeCabecas());
-                dto.setCertificado(mapearSimNao(producaoRecente.getCertificacao()));
-                dto.setDoamDejetos(mapearSimNao(producaoRecente.getDoacaoDejetos()));
+                dto.setCertificado(SimNaoMapper.toDescricao(producaoRecente.getCertificacao()));
+                dto.setDoamDejetos(SimNaoMapper.toDescricao(producaoRecente.getDoacaoDejetos()));
                 dto.setTecnico(producaoRecente.getTecnicoResponsavel());
             }
         }
@@ -109,15 +111,4 @@ public class ProdutorDetalheService {
         };
     }
 
-    /**
-     * Mapeia S/N para Sim/Não
-     */
-    private String mapearSimNao(String valor) {
-        if (valor == null) return null;
-        return switch (valor.toUpperCase()) {
-            case "S" -> "Sim";
-            case "N" -> "Não";
-            default -> valor;
-        };
-    }
 }
