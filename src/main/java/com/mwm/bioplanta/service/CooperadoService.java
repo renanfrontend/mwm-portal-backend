@@ -138,10 +138,19 @@ public class CooperadoService {
             produtor.setBioFiliada(filiada);
             produtor.setNome(dto.getNomeCooperado());
             produtor.setCpfCnpj(dto.getCpfCnpj());
-            produtor.setTipoPessoa(dto.getCpfCnpj() != null && dto.getCpfCnpj().length() > 14 ? "PJ" : "PF");
+            // Corrige tipo_pessoa: 11 dígitos = PF, 14 dígitos = PJ
+            String cpfCnpjNum = dto.getCpfCnpj() != null ? dto.getCpfCnpj().replaceAll("\\D", "") : "";
+            if (cpfCnpjNum.length() == 11) {
+                produtor.setTipoPessoa("PF");
+            } else if (cpfCnpjNum.length() == 14) {
+                produtor.setTipoPessoa("PJ");
+            } else {
+                produtor.setTipoPessoa(""); // Ou defina um padrão/erro se preferir
+            }
             produtor.setStatus("A");
             produtor.setDataCadastro(LocalDate.now());
-            produtor.setCodigoProdutor("PROD-" + System.currentTimeMillis()); // Gerador simples provisório
+            // Salva o código do produtor conforme informado pelo usuário, ou vazio se não informado
+            produtor.setCodigoProdutor(dto.getCodigoProdutor() != null ? dto.getCodigoProdutor() : "");
             produtor.setCriadoEm(LocalDateTime.now());
             produtor.setAtualizadoEm(LocalDateTime.now());
             produtor.setDistanciaKm(dto.getDistanciaKm());
@@ -167,8 +176,8 @@ public class CooperadoService {
         // 4. Criar BioEstabelecimento
         BioEstabelecimento estabelecimento = new BioEstabelecimento();
         estabelecimento.setBioProdutor(produtor);
-        // Gerar código único para estabelecimento (Obrigatório)
-        estabelecimento.setCodigoEstabelecimento("EST-" + System.currentTimeMillis()); 
+        // Salva o código do estabelecimento conforme informado pelo usuário, ou vazio se não informado
+        estabelecimento.setCodigoEstabelecimento(dto.getCodigoEstabelecimento() != null ? dto.getCodigoEstabelecimento() : "");
         
         // Campos Obrigatórios (NOT NULL no banco)
         estabelecimento.setNumeroEstabelecimento(dto.getNumEstabelecimento() != null ? dto.getNumEstabelecimento() : "EST-PADRAO"); 
@@ -424,10 +433,22 @@ public class CooperadoService {
         // 2. Atualizar Dados do Produtor
         produtor.setNome(dto.getNomeCooperado());
         produtor.setCpfCnpj(dto.getCpfCnpj());
-        produtor.setTipoPessoa(dto.getCpfCnpj() != null && dto.getCpfCnpj().length() > 14 ? "PJ" : "PF");
+        // Corrige tipo_pessoa: 11 dígitos = PF, 14 dígitos = PJ
+        String cpfCnpjNum = dto.getCpfCnpj() != null ? dto.getCpfCnpj().replaceAll("\\D", "") : "";
+        if (cpfCnpjNum.length() == 11) {
+            produtor.setTipoPessoa("PF");
+        } else if (cpfCnpjNum.length() == 14) {
+            produtor.setTipoPessoa("PJ");
+        } else {
+            produtor.setTipoPessoa(""); // Ou defina um padrão/erro se preferir
+        }
         produtor.setAtualizadoEm(LocalDateTime.now());
-            produtor.setCertificado(certificadoBanco);
-            produtor.setDoamDejetos(doamDejetosBanco);
+        produtor.setCertificado(certificadoBanco);
+        produtor.setDoamDejetos(doamDejetosBanco);
+        // Atualiza o código do produtor conforme informado pelo usuário, se vier preenchido
+        if (dto.getCodigoProdutor() != null) {
+            produtor.setCodigoProdutor(dto.getCodigoProdutor());
+        }
         
         // Se a filiada mudou
         if (dto.getFiliadaId() != null && !dto.getFiliadaId().equals(produtor.getBioFiliada().getId())) {
@@ -443,6 +464,10 @@ public class CooperadoService {
         estabelecimento.setNumeroPropriedade(dto.getNumPropriedade() != null ? dto.getNumPropriedade() : estabelecimento.getNumeroPropriedade());
         estabelecimento.setMatricula(dto.getMatricula() != null ? dto.getMatricula().toString() : estabelecimento.getMatricula());
         estabelecimento.setMunicipio(dto.getMunicipio() != null ? dto.getMunicipio() : estabelecimento.getMunicipio());
+        // Atualiza o código do estabelecimento conforme informado pelo usuário, se vier preenchido
+        if (dto.getCodigoEstabelecimento() != null) {
+            estabelecimento.setCodigoEstabelecimento(dto.getCodigoEstabelecimento());
+        }
         
         // Atualizar estado se município mudou
         if (dto.getMunicipio() != null && dto.getMunicipio().contains("-")) {
