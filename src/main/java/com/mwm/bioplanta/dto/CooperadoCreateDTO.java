@@ -50,8 +50,15 @@ public class CooperadoCreateDTO {
     @Schema(description = "Nº da propriedade", example = "PROP001")
     private String numPropriedade;
 
+
     @Schema(description = "Nº do estabelecimento", example = "EST001")
     private String numEstabelecimento;
+
+    @Schema(description = "Código do produtor (opcional)", example = "12345678901")
+    private String codigoProdutor;
+
+    @Schema(description = "Código do estabelecimento (opcional)", example = "12345678901234")
+    private String codigoEstabelecimento;
 
     @Schema(description = "Município", example = "Toledo - PR")
     private String municipio;
