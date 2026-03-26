@@ -76,10 +76,15 @@ public class BioProdutor {
     @Column(name = "atualizado_em")
     @Schema(description = "Data de atualização")
     private LocalDateTime atualizadoEm;
-        @Column(name = "certificado")
-        @Schema(description = "Produtor certificado (N/S)", example = "N")
-        private String certificado;
-        @Column(name = "doam_dejetos")
-        @Schema(description = "Produtor doa dejetos (S/N)", example = "S")
-        private String doamDejetos;
+    @Column(name = "certificado")
+    @Schema(description = "Produtor certificado (N/S)", example = "N")
+    private String certificado;
+
+    @Column(name = "participa_projeto")
+    @Schema(description = "Participa do projeto (S/N)", example = "S")
+    private String participaProjeto;
+
+    @Column(name = "doam_dejetos")
+    @Schema(description = "Produtor doa dejetos (S/N)", example = "S")
+    private String doamDejetos;
 }
