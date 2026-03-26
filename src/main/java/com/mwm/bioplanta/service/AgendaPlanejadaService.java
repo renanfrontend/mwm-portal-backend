@@ -65,12 +65,23 @@ public class AgendaPlanejadaService {
             throw new IllegalArgumentException("Selecione ao menos um estabelecimento para copiar a agenda.");
         }
 
+
         List<BioAgendaPlanejada> registrosOrigem = bioAgendaPlanejadaRepository.findParaCopia(
             dto.getIdBioplanta(),
             dto.getIdFiliada(),
             inicioOrigem,
             fimOrigem,
             idsEstabelecimentos
+        );
+
+        // Carrega estabelecimentos ativos (com produtores) para validação
+        List<BioEstabelecimento> estabelecimentosAtivos = bioEstabelecimentoRepository.findByFiliada(dto.getIdFiliada());
+
+        // Aplica filtro de produtores inválidos para semana destino e datas futuras
+        List<BioAgendaPlanejada> registrosFiltrados = com.mwm.bioplanta.service.validador.ProdutorAgendaPlanejadaValidador.filtrarAgendasPorRegrasParticipacaoECertificado(
+            registrosOrigem,
+            estabelecimentosAtivos,
+            inicioDestino // referência para semana destino
         );
 
         // Limpa toda a semana destino antes de copiar
@@ -80,11 +91,11 @@ public class AgendaPlanejadaService {
             inicioDestino,
             fimDestino
         );
-        log.info("Deletados {} registros no destino. Copiando {} registros da semana {} para {}", 
-            deletados, registrosOrigem.size(), inicioOrigem, inicioDestino);
+        log.info("Deletados {} registros no destino. Copiando {} registros da semana {} para {} ({} após filtro)", 
+            deletados, registrosOrigem.size(), inicioOrigem, inicioDestino, registrosFiltrados.size());
 
-        // Copia registros planejados do período de origem
-        for (BioAgendaPlanejada origem : registrosOrigem) {
+        // Copia registros planejados do período de origem (após filtro)
+        for (BioAgendaPlanejada origem : registrosFiltrados) {
             long diasDiferenca = ChronoUnit.DAYS.between(inicioOrigem, origem.getDataAgendada());
             LocalDate novaData = inicioDestino.plusDays(diasDiferenca);
 
@@ -103,7 +114,6 @@ public class AgendaPlanejadaService {
         }
 
         // Para cada estabelecimento ativo selecionado, se não tem registro planejado no período de origem, cria registro básico na semana destino
-        List<BioEstabelecimento> estabelecimentosAtivos = bioEstabelecimentoRepository.findByFiliada(dto.getIdFiliada());
         for (Long idEstab : idsEstabelecimentos) {
             boolean jaCopiado = registrosOrigem.stream().anyMatch(r -> r.getIdEstabelecimento().equals(idEstab));
             if (!jaCopiado) {
