@@ -80,9 +80,6 @@ public class BioProdutor {
     @Schema(description = "Produtor certificado (N/S)", example = "N")
     private String certificado;
 
-    @Column(name = "participa_projeto")
-    @Schema(description = "Participa do projeto (S/N)", example = "S")
-    private String participaProjeto;
 
     @Column(name = "doam_dejetos")
     @Schema(description = "Produtor doa dejetos (S/N)", example = "S")

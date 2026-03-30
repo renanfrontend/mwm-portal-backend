@@ -22,17 +22,17 @@ class ProdutorAgendaPlanejadaValidadorTest {
         // Produtor 1: participa e certificado
         BioProdutor p1 = new BioProdutor();
         p1.setId(1L);
-        p1.setParticipaProjeto("S");
+        p1.setDoamDejetos("S");
         p1.setCertificado("S");
         // Produtor 2: não participa
         BioProdutor p2 = new BioProdutor();
         p2.setId(2L);
-        p2.setParticipaProjeto("N");
+        p2.setDoamDejetos("N");
         p2.setCertificado("S");
         // Produtor 3: não certificado
         BioProdutor p3 = new BioProdutor();
         p3.setId(3L);
-        p3.setParticipaProjeto("S");
+        p3.setDoamDejetos("S");
         p3.setCertificado("N");
 
         BioEstabelecimento e1 = new BioEstabelecimento();
@@ -77,7 +77,7 @@ class ProdutorAgendaPlanejadaValidadorTest {
         LocalDate referencia = LocalDate.of(2026, 3, 18);
         BioProdutor p1 = new BioProdutor();
         p1.setId(1L);
-        p1.setParticipaProjeto("S");
+        p1.setDoamDejetos("S");
         p1.setCertificado("S");
         BioEstabelecimento e1 = new BioEstabelecimento();
         e1.setId(101L);

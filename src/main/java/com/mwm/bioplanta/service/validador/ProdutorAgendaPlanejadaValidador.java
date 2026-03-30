@@ -33,7 +33,7 @@ public class ProdutorAgendaPlanejadaValidador {
                 .filter(e -> {
                     BioProdutor p = e.getBioProdutor();
                     if (p == null) return false;
-                    boolean naoParticipa = campoNao(p.getParticipaProjeto());
+                    boolean naoParticipa = campoNao(p.getDoamDejetos());
                     boolean naoCertificado = campoNao(p.getCertificado());
                     return naoParticipa || naoCertificado;
                 })
