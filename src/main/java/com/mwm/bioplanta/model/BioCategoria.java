@@ -34,9 +34,9 @@ public class BioCategoria {
     @Schema(description = "Label da categoria", example = "Logística")
     private String label;
 
-    @Column(name = "value", nullable = false)
+    @Column(name = "valor", nullable = false)
     @Schema(description = "Valor da categoria", example = "Logística")
-    private String value;
+    private String valor;
 
     @Column(name = "criado_em")
     @Schema(description = "Data de criação")

@@ -107,7 +107,7 @@ public class InicializadorDados implements CommandLineRunner {
         BioVeiculoTipo tipo = new BioVeiculoTipo();
         // tipo.setId(id); // ID gerado automaticamente
         tipo.setLabel(label);
-        tipo.setValue(value);
+        tipo.setValor(value);
         tipo.setCriadoEm(LocalDateTime.now());
         tipo.setAtualizadoEm(LocalDateTime.now());
         return tipo;
@@ -117,7 +117,7 @@ public class InicializadorDados implements CommandLineRunner {
         BioVeiculoCombustivel combustivel = new BioVeiculoCombustivel();
         // combustivel.setId(id); // ID gerado automaticamente
         combustivel.setLabel(label);
-        combustivel.setValue(value);
+        combustivel.setValor(value);
         combustivel.setCriadoEm(LocalDateTime.now());
         combustivel.setAtualizadoEm(LocalDateTime.now());
         return combustivel;

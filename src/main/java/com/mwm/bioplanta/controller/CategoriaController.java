@@ -38,7 +38,7 @@ public class CategoriaController {
         return new CategoriaResponseDTO(
                 categoria.getId(),
                 categoria.getLabel(),
-                categoria.getValue()
+                categoria.getValor()
         );
     }
 }
