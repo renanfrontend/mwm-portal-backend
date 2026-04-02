@@ -32,9 +32,9 @@ public class BioVeiculoTransportadoraController {
     }
 
     @GetMapping
-    @Operation(summary = "Obter todos os veículos de transportadoras")
+    @Operation(summary = "Obter todos os veículos de transportadoras (excluindo transportadoras criadas por Entrega de Dejetos)")
     public List<BioVeiculoTransportadora> listarTodos() {
-        return bioVeiculoTransportadoraRepository.findAll();
+        return bioVeiculoTransportadoraRepository.findAllExcluindoEntregaDejetos();
     }
 
     @GetMapping("/{id}")

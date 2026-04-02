@@ -9,18 +9,18 @@ import org.springframework.data.repository.query.Param;
 import com.mwm.bioplanta.model.BioTransportadora;
 
 public interface BioTransportadoraRepository extends JpaRepository<BioTransportadora, Long> {
-    @Query("SELECT t FROM BioTransportadora t WHERE t.status = 'Ativo'")
+    @Query("SELECT t FROM BioTransportadora t WHERE t.status = 'Ativo' AND t.origemCadastro = 'FORMULARIO_LOGISTICA'")
     Page<BioTransportadora> findAllAtivas(Pageable pageable);
 
     BioTransportadora findByNomeFantasia(String nomeFantasia);
 
     BioTransportadora findByCnpj(String cnpj);
 
-        @Query("SELECT t FROM BioTransportadora t WHERE t.status = 'Ativo' AND (" +
+    @Query("SELECT t FROM BioTransportadora t WHERE t.status = 'Ativo' AND t.origemCadastro = 'FORMULARIO_LOGISTICA' AND (" +
             "LOWER(t.nomeFantasia) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(t.razaoSocial) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "t.cnpj LIKE CONCAT('%', :search, '%'))")
-        Page<BioTransportadora> buscar(@Param("search") String search, Pageable pageable);
+    Page<BioTransportadora> buscar(@Param("search") String search, Pageable pageable);
 
     @Override
     @org.springframework.lang.NonNull

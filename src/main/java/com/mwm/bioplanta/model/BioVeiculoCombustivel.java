@@ -34,9 +34,9 @@ public class BioVeiculoCombustivel {
     @Schema(description = "Label do tipo de combustível", example = "Diesel")
     private String label;
 
-    @Column(name = "valor", nullable = false)
+    @Column(name = "value", nullable = false)
     @Schema(description = "Valor do tipo de combustível", example = "diesel")
-    private String valor;
+    private String value;
 
     @Column(name = "criado_em")
     @Schema(description = "Data de criação")

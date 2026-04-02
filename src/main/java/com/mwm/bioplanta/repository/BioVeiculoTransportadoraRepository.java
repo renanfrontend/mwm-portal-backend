@@ -1,6 +1,7 @@
 package com.mwm.bioplanta.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import com.mwm.bioplanta.model.BioVeiculoTransportadora;
 import com.mwm.bioplanta.model.BioTransportadora;
@@ -16,4 +17,10 @@ public interface BioVeiculoTransportadoraRepository extends JpaRepository<BioVei
     List<BioVeiculoTransportadora> findByBioTransportadoraId(Long transportadoraId);
 
     long countByBioTransportadoraId(Long transportadoraId);
+
+    @Query("SELECT v FROM BioVeiculoTransportadora v " +
+           "JOIN FETCH v.bioTransportadora t " +
+           "WHERE t.origemCadastro = 'FORMULARIO_LOGISTICA' " +
+           "ORDER BY t.nomeFantasia ASC")
+    List<BioVeiculoTransportadora> findAllExcluindoEntregaDejetos();
 }

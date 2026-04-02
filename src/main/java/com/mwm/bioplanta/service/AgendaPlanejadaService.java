@@ -24,6 +24,9 @@ import java.util.Optional;
 import com.mwm.bioplanta.dto.CopiarAgendaRequestDTO;
 import com.mwm.bioplanta.dto.LimparAgendaRequestDTO;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -44,6 +47,31 @@ public class AgendaPlanejadaService {
         long count = bioAgendaPlanejadaRepository.countViagensReais(
                 idBioplanta, idFiliada, dataInicio, dataFim);
         return count > 0;
+    }
+
+    /**
+     * Busca produtores válidos (doamDejetos='S' e certificado='S') que NÃO possuem agenda no período
+     * Retorna ordenado alfabeticamente pelo nome do produtor
+     * 
+     * @param idFiliada ID da filial
+     * @param idsEstabelecimentosJaExistentes IDs dos estabelecimentos que já têm agenda
+     * @return Lista de estabelecimentos válidos faltantes, ordenada por nome do produtor
+     */
+    private List<BioEstabelecimento> buscarProdutoresValidosFaltantes(
+            Long idFiliada,
+            Set<Long> idsEstabelecimentosJaExistentes) {
+        
+        // Busca TODOS os estabelecimentos válidos da filial
+        List<BioEstabelecimento> todosValidos = bioEstabelecimentoRepository.findByFiliada(idFiliada);
+        
+        // Filtra apenas os que NÃO estão na agenda atual E atendem aos critérios
+        return todosValidos.stream()
+                .filter(e -> !idsEstabelecimentosJaExistentes.contains(e.getId()))
+                .filter(e -> e.getBioProdutor() != null)
+                .filter(e -> "S".equalsIgnoreCase(e.getBioProdutor().getDoamDejetos()))
+                .filter(e -> "S".equalsIgnoreCase(e.getBioProdutor().getCertificado()))
+                .sorted(Comparator.comparing(e -> e.getBioProdutor().getNome()))
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -134,6 +162,41 @@ public class AgendaPlanejadaService {
                     bioAgendaPlanejadaRepository.save(novo);
                 }
             }
+        }
+
+        // ===================================================================
+        // NOVO: Trazer produtores válidos faltantes e incluir na cópia
+        // Descomente ou comente essa seção para ativar/desativar a funcionalidade
+        // ===================================================================
+        // Busca apenas os estabelecimentos que JÁ TINHAM AGENDA (não inclui os selecionados)
+        Set<Long> idsEstabelecimentosComAgendaOrigem = registrosOrigem.stream()
+                .map(BioAgendaPlanejada::getIdEstabelecimento)
+                .collect(Collectors.toSet());
+
+        List<BioEstabelecimento> produtoresValidosFaltantes = buscarProdutoresValidosFaltantes(
+                dto.getIdFiliada(),
+                idsEstabelecimentosComAgendaOrigem
+        );
+
+        int qtdNovosProdutores = 0;
+        for (BioEstabelecimento estab : produtoresValidosFaltantes) {
+            BioAgendaPlanejada novo = new BioAgendaPlanejada();
+            novo.setIdBioplanta(dto.getIdBioplanta());
+            novo.setIdFiliada(dto.getIdFiliada());
+            novo.setIdEstabelecimento(estab.getId());
+            novo.setProdutor(estab.getBioProdutor() != null ? estab.getBioProdutor().getNome() : "Produtor Desconhecido");
+            novo.setDistanciaKm(estab.getBioProdutor() != null && estab.getBioProdutor().getDistanciaKm() != null ? estab.getBioProdutor().getDistanciaKm().intValue() : 0);
+            novo.setTransportadora(null);
+            novo.setQtdViagens(0);
+            novo.setDataAgendada(inicioDestino);
+            novo.setCriadoEm(LocalDateTime.now());
+            novo.setAtualizadoEm(LocalDateTime.now());
+            bioAgendaPlanejadaRepository.save(novo);
+            qtdNovosProdutores++;
+        }
+        
+        if (qtdNovosProdutores > 0) {
+            log.info("Adicionados {} produtores válidos faltantes à semana destino (alfabético)", qtdNovosProdutores);
         }
     }
 
