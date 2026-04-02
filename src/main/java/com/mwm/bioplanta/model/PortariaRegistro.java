@@ -24,7 +24,8 @@ import java.time.LocalDateTime;
 public class PortariaRegistro {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_portaria_registro")
+    @SequenceGenerator(name = "seq_portaria_registro", sequenceName = "seq_portaria_registro", allocationSize = 1)
     private Long id;
 
     @Column(name = "data_entrada", nullable = false)

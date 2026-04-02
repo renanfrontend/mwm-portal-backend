@@ -50,7 +50,7 @@ public class BioVeiculoTransportadora {
     @Schema(description = "Tipo de abastecimento", example = "Diesel")
     private String tipoAbastecimento;
 
-    @Column(name = "status", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "status")
     @Schema(description = "Status do veículo", example = "Ativo")
     private String status = "Ativo";
 

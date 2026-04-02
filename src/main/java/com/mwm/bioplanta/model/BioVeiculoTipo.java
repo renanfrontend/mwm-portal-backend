@@ -34,9 +34,9 @@ public class BioVeiculoTipo {
     @Schema(description = "Label do tipo de veículo", example = "Truck")
     private String label;
 
-    @Column(name = "valor", nullable = false)
+    @Column(name = "value", nullable = false)
     @Schema(description = "Valor do tipo de veículo", example = "truck")
-    private String valor;
+    private String value;
 
     @Column(name = "criado_em")
     @Schema(description = "Data de criação")

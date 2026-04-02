@@ -55,7 +55,7 @@ public class VeiculoController {
         return new VeiculoTipoResponseDTO(
                 tipo.getId(),
                 tipo.getLabel(),
-                tipo.getValor()
+                tipo.getValue()
         );
     }
 
@@ -63,7 +63,7 @@ public class VeiculoController {
         return new VeiculoCombustivelResponseDTO(
                 combustivel.getId(),
                 combustivel.getLabel(),
-                combustivel.getValor()
+                combustivel.getValue()
         );
     }
 }
