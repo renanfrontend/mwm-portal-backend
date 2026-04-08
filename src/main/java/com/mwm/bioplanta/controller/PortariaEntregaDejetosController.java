@@ -3,8 +3,14 @@ package com.mwm.bioplanta.controller;
 import com.mwm.bioplanta.dto.PortariaEntregaDejetosDTO;
 import com.mwm.bioplanta.service.PortariaEntregaDejetosService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +24,31 @@ public class PortariaEntregaDejetosController {
 
     public PortariaEntregaDejetosController(PortariaEntregaDejetosService entregaDejetosService) {
         this.entregaDejetosService = entregaDejetosService;
+    }
+
+    @GetMapping("/{id}")
+    @Operation(
+        summary = "Obter entrega de dejetos por ID",
+        description = "Retorna os dados completos de uma entrega de dejetos"
+    )
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Entrega encontrada",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = PortariaEntregaDejetosDTO.class))),
+        @ApiResponse(responseCode = "404", description = "Entrega não encontrada"),
+        @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
+    })
+    public ResponseEntity<Object> obterEntregaDeDejetos(
+            @Parameter(description = "ID da entrega de dejetos", example = "37", required = true)
+            @PathVariable Long id) {
+        try {
+            var result = entregaDejetosService.obterEntregaDeDejetos(id);
+            return ResponseEntity.ok(result);
+        } catch (RuntimeException e) {
+            if (e.getMessage().contains("não encontrada")) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
     }
 
     @PostMapping

@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
@@ -26,6 +27,9 @@ public class PortariaAbastecimentoDTO {
 
     @Schema(description = "ID do registro principal")
     private Long registroId;
+
+    @Schema(description = "ID do produtor (cooperado)")
+    private Long produtorId;
 
     @Schema(description = "ID do motorista")
     private Long motoristaId;
@@ -63,6 +67,9 @@ public class PortariaAbastecimentoDTO {
 
     @Schema(description = "Peso final em kg", example = "4500")
     private BigDecimal pesoFinal;
+
+    @Schema(description = "Densidade em g/cm³", example = "1025")
+    private String densidade;
 
     @Schema(description = "Data de criação")
     private LocalDateTime criadoEm;

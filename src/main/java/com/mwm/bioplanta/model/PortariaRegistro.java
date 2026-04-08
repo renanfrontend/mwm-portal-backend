@@ -58,6 +58,9 @@ public class PortariaRegistro {
     @Column(name = "observacoes")
     private String observacoes;
 
+    @Column(name = "entrega_dejetos_id")
+    private Long entregaDejetosId;
+
     @Column(name = "criado_em")
     private LocalDateTime criadoEm;
 
