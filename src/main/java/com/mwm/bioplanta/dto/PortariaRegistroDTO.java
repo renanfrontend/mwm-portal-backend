@@ -72,5 +72,8 @@ public class PortariaRegistroDTO {
     @Schema(description = "Dados de Visita (quando tipoRegistro = VISITA)")
     private PortariaVisitaDTO visita;
 
+    @Schema(description = "Dados de Entrega de Dejetos (quando tipoRegistro = ENTREGA_DEJETOS)")
+    private PortariaEntregaDejetosDTO.EntregaDejetosDTO entrega_dejetos;
+
     // Outros tipos podem ser adicionados conforme necessário
 }

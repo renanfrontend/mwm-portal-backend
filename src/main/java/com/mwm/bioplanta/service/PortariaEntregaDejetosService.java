@@ -210,17 +210,25 @@ public class PortariaEntregaDejetosService {
         return abastecimentoRepository.save(abastecimento);
     }
 
-    private void criarEntregaDejetos(PortariaEntregaDejetosDTO dto, BioPortariaAbastecimento abastecimento) {
-        BioPortariaEntregaDejetos entrega = new BioPortariaEntregaDejetos();
-        PortariaEntregaDejetosDTO.EntregaDejetosDTO ent = dto.getEntrega_dejetos();
-        entrega.setAbastecimentoId(abastecimento.getId());
-        entrega.setAgendaRealizadaId(null);
-        entrega.setProdutorId(ent != null ? (ent.getProdutor_id() != null ? Long.valueOf(ent.getProdutor_id()) : null) : null);
-        entrega.setDensidade(ent != null ? ent.getDensidade() : null);
-        entrega.setCriadoEm(LocalDateTime.now());
-        entrega.setAtualizadoEm(LocalDateTime.now());
-        entregaDejetosRepository.save(entrega);
-    }
+     private void criarEntregaDejetos(PortariaEntregaDejetosDTO dto, BioPortariaAbastecimento abastecimento) {
+         BioPortariaEntregaDejetos entrega = new BioPortariaEntregaDejetos();
+         PortariaEntregaDejetosDTO.EntregaDejetosDTO ent = dto.getEntrega_dejetos();
+         // Nota: abastecimentoId foi removido - agora usamos entrega_dejetos_id na PortariaRegistro
+         entrega.setAgendaRealizadaId(null);
+         entrega.setProdutorId(ent != null ? (ent.getProdutor_id() != null ? Long.valueOf(ent.getProdutor_id()) : null) : null);
+         entrega.setDensidade(ent != null ? ent.getDensidade() : null);
+         entrega.setCriadoEm(LocalDateTime.now());
+         entrega.setAtualizadoEm(LocalDateTime.now());
+         entregaDejetosRepository.save(entrega);
+     }
+
+     /**
+      * Obter entrega de dejetos por ID
+      */
+     public BioPortariaEntregaDejetos obterEntregaDeDejetos(Long id) {
+         return entregaDejetosRepository.findById(id)
+             .orElseThrow(() -> new RuntimeException("Entrega de dejetos não encontrada com ID: " + id));
+     }
 
     /**
      * Gera um CNPJ único (aleatório) para registros manuais de transportadora
