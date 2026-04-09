@@ -32,6 +32,9 @@ public class BioAgendaRealizada {
     @Column(name = "status")
     private String status = "REALIZADO";
 
+    @Column(name = "entrega_dejetos_id")
+    private Long entregaDejetosId;
+
     @Column(name = "criado_em")
     private LocalDateTime criadoEm;
 
