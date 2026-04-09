@@ -28,11 +28,14 @@ public class BioPortariaEntregaDejetos {
     @Column(name = "transportadora_manual")
     private String transportadoraManual;
 
-    @Column(name = "veiculo_id")
-    private Long veiculoId;
+     @Column(name = "veiculo_id")
+     private Long veiculoId;
 
-    @Column(name = "placa_manual")
-    private String placaManual;
+     @Column(name = "placa")
+     private String placa;
+
+     @Column(name = "placa_manual")
+     private String placaManual;
 
     @Column(name = "tipo_veiculo")
     private String tipoVeiculo;

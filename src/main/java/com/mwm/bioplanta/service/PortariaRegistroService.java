@@ -268,73 +268,38 @@ public class PortariaRegistroService {
         dto.setCriadoEm(registro.getCriadoEm());
         dto.setAtualizadoEm(registro.getAtualizadoEm());
         
-        // Buscar dados relacionados de acordo com o tipo de registro
-        if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaDejetosId() != null) {
-            var entregaDejetos = entregaDejetosRepository.findById(registro.getEntregaDejetosId()).orElse(null);
-            log.info("🔍 [MAPTODTO] EntregaDejetos ID: {}, Densidade: {}", registro.getEntregaDejetosId(), entregaDejetos != null ? entregaDejetos.getDensidade() : "NULL");
-            if (entregaDejetos != null) {
-                // Criar DTO de entrega com os dados armazenados
-                // Note: PortariaAbastecimentoDTO será usado para armazenar dados de entrega também
-                PortariaAbastecimentoDTO abastecimento = new PortariaAbastecimentoDTO();
-                abastecimento.setProdutorId(entregaDejetos.getProdutorId());
-                abastecimento.setMotoristaId(entregaDejetos.getMotoristaId());
-                abastecimento.setMotoristaNome(entregaDejetos.getMotoristaNome());
-                abastecimento.setCpfMotorista(entregaDejetos.getCpfMotorista());
-                abastecimento.setTransportadoraId(entregaDejetos.getTransportadoraId());
-                abastecimento.setTransportadoraManual(entregaDejetos.getTransportadoraManual());
-                abastecimento.setVeiculoId(entregaDejetos.getVeiculoId());
-                abastecimento.setTipoVeiculo(entregaDejetos.getTipoVeiculo());
-                abastecimento.setPesoInicial(entregaDejetos.getPesoInicial() != null ? 
-                    java.math.BigDecimal.valueOf(entregaDejetos.getPesoInicial()) : null);
-                abastecimento.setPesoFinal(entregaDejetos.getPesoFinal() != null ? 
-                    java.math.BigDecimal.valueOf(entregaDejetos.getPesoFinal()) : null);
-                abastecimento.setDensidade(entregaDejetos.getDensidade());
-                log.info("✅ [MAPTODTO] Densidade setada em abastecimento: {}", abastecimento.getDensidade());
-                abastecimento.setCriadoEm(entregaDejetos.getCriadoEm());
-                abastecimento.setAtualizadoEm(entregaDejetos.getAtualizadoEm());
-                
-                // Lógica para remontar a transportadora: se foi digitação manual ou se foi selecionado uma transportadora
-                if (entregaDejetos.getTransportadoraManual() != null && !entregaDejetos.getTransportadoraManual().isEmpty()) {
-                    // Digitação manual - usar a transportadora manual
-                    abastecimento.setTransportadoraManual(entregaDejetos.getTransportadoraManual());
-                } else if (entregaDejetos.getTransportadoraId() != null) {
-                    // Foi selecionado uma transportadora - buscar o nome na tabela de transportadoras
-                    var transportadora = transportadoraRepository.findById(entregaDejetos.getTransportadoraId()).orElse(null);
-                    if (transportadora != null && transportadora.getNomeFantasia() != null) {
-                        abastecimento.setTransportadoraNome(transportadora.getNomeFantasia());
-                    }
-                }
-                
-                // Lógica para remontar a placa: se foi digitação manual ou se foi selecionado um veículo
-                if (entregaDejetos.getPlacaManual() != null && !entregaDejetos.getPlacaManual().isEmpty()) {
-                    // Digitação manual - usar a placa manual
-                    abastecimento.setPlacaManual(entregaDejetos.getPlacaManual());
-                } else if (entregaDejetos.getVeiculoId() != null) {
-                    // Foi selecionado um veículo - buscar a placa na tabela de veículos
-                    var veiculo = veiculoRepository.findById(entregaDejetos.getVeiculoId()).orElse(null);
-                    if (veiculo != null && veiculo.getPlaca() != null) {
-                        abastecimento.setPlaca(veiculo.getPlaca());
-                    }
-                }
-                log.info("🔐 [SERIALIZE] Abastecimento antes de retornar - Densidade: {}", abastecimento.getDensidade());
-                dto.setAbastecimento(abastecimento);
-                
-                // Também retornar como entrega_dejetos para o frontend
-                PortariaEntregaDejetosDTO.EntregaDejetosDTO entregaDTO = new PortariaEntregaDejetosDTO.EntregaDejetosDTO();
-                entregaDTO.setProdutor_id(String.valueOf(entregaDejetos.getProdutorId()));
-                entregaDTO.setMotorista_nome(entregaDejetos.getMotoristaNome());
-                entregaDTO.setCpf_motorista(entregaDejetos.getCpfMotorista());
-                entregaDTO.setMotorista_id(entregaDejetos.getMotoristaId() != null ? String.valueOf(entregaDejetos.getMotoristaId()) : null);
-                entregaDTO.setTransportadora_id(entregaDejetos.getTransportadoraId() != null ? String.valueOf(entregaDejetos.getTransportadoraId()) : null);
-                entregaDTO.setTransportadora_manual(entregaDejetos.getTransportadoraManual());
-                entregaDTO.setVeiculo_id(entregaDejetos.getVeiculoId() != null ? String.valueOf(entregaDejetos.getVeiculoId()) : null);
-                entregaDTO.setPlaca_manual(entregaDejetos.getPlacaManual());
-                entregaDTO.setTipo_veiculo(entregaDejetos.getTipoVeiculo());
-                entregaDTO.setPeso_inicial(entregaDejetos.getPesoInicial() != null ? entregaDejetos.getPesoInicial().intValue() : null);
-                entregaDTO.setPeso_final(entregaDejetos.getPesoFinal() != null ? entregaDejetos.getPesoFinal().intValue() : null);
-                entregaDTO.setDensidade(entregaDejetos.getDensidade());
-                dto.setEntrega_dejetos(entregaDTO);
-            }
+         // Buscar dados relacionados de acordo com o tipo de registro
+         if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaDejetosId() != null) {
+             var entregaDejetos = entregaDejetosRepository.findById(registro.getEntregaDejetosId()).orElse(null);
+             if (entregaDejetos != null) {
+                 PortariaEntregaDejetosDTO.EntregaDejetosDTO entregaDTO = new PortariaEntregaDejetosDTO.EntregaDejetosDTO();
+                 entregaDTO.setProdutor_id(String.valueOf(entregaDejetos.getProdutorId()));
+                 entregaDTO.setMotorista_nome(entregaDejetos.getMotoristaNome());
+                 entregaDTO.setCpf_motorista(entregaDejetos.getCpfMotorista());
+                 entregaDTO.setMotorista_id(entregaDejetos.getMotoristaId() != null ? String.valueOf(entregaDejetos.getMotoristaId()) : null);
+                 entregaDTO.setTransportadora_id(entregaDejetos.getTransportadoraId() != null ? String.valueOf(entregaDejetos.getTransportadoraId()) : null);
+                 entregaDTO.setTransportadora_manual(entregaDejetos.getTransportadoraManual());
+                 entregaDTO.setVeiculo_id(entregaDejetos.getVeiculoId() != null ? String.valueOf(entregaDejetos.getVeiculoId()) : null);
+                 entregaDTO.setTipo_veiculo(entregaDejetos.getTipoVeiculo());
+                 entregaDTO.setPeso_inicial(entregaDejetos.getPesoInicial() != null ? entregaDejetos.getPesoInicial().intValue() : null);
+                 entregaDTO.setPeso_final(entregaDejetos.getPesoFinal() != null ? entregaDejetos.getPesoFinal().intValue() : null);
+                 entregaDTO.setDensidade(entregaDejetos.getDensidade());
+                 
+                 // Fluxo 1: Seleção normal - obter placa do veículo
+                 if (entregaDejetos.getVeiculoId() != null) {
+                     var veiculo = veiculoRepository.findById(entregaDejetos.getVeiculoId()).orElse(null);
+                     if (veiculo != null && veiculo.getPlaca() != null) {
+                         entregaDTO.setPlaca(veiculo.getPlaca());
+                     }
+                 }
+                 
+                 // Fluxo 2: Digitação manual - retornar placa_manual
+                 if (entregaDejetos.getPlacaManual() != null && !entregaDejetos.getPlacaManual().isEmpty()) {
+                     entregaDTO.setPlaca_manual(entregaDejetos.getPlacaManual());
+                 }
+                 
+                 dto.setEntrega_dejetos(entregaDTO);
+             }
         }
         
         return dto;

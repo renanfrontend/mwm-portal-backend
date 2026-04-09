@@ -16,34 +16,39 @@ public class PortariaEntregaDejetosService {
     private final BioVeiculoTipoRepository veiculoTipoRepository;
     private final BioVeiculoTransportadoraRepository veiculoRepository;
     private final PortariaRegistroRepository registroRepository;
-    private final BioPortariaAbastecimentoRepository abastecimentoRepository;
     private final BioPortariaEntregaDejetosRepository entregaDejetosRepository;
+    private final BioAgendaRealizadaRepository agendaRealizadaRepository;
 
     public PortariaEntregaDejetosService(
             BioTransportadoraRepository transportadoraRepository,
             BioVeiculoTipoRepository veiculoTipoRepository,
             BioVeiculoTransportadoraRepository veiculoRepository,
             PortariaRegistroRepository registroRepository,
-            BioPortariaAbastecimentoRepository abastecimentoRepository,
-            BioPortariaEntregaDejetosRepository entregaDejetosRepository) {
+            BioPortariaEntregaDejetosRepository entregaDejetosRepository,
+            BioAgendaRealizadaRepository agendaRealizadaRepository) {
         this.transportadoraRepository = transportadoraRepository;
         this.veiculoTipoRepository = veiculoTipoRepository;
         this.veiculoRepository = veiculoRepository;
         this.registroRepository = registroRepository;
-        this.abastecimentoRepository = abastecimentoRepository;
         this.entregaDejetosRepository = entregaDejetosRepository;
+        this.agendaRealizadaRepository = agendaRealizadaRepository;
     }
 
-     @Transactional
-     public PortariaEntregaDejetosDTO registrarEntregaDeDejetos(PortariaEntregaDejetosDTO dto) {
-         BioTransportadora transportadora = getOrCreateTransportadora(dto);
-         BioVeiculoTipo veiculoTipo = getOrCreateVeiculoTipo(dto);
-         BioVeiculoTransportadora veiculo = getOrCreateVeiculo(dto, transportadora, veiculoTipo);
-         PortariaRegistro registro = criarRegistro(dto);
-         BioPortariaAbastecimento abastecimento = criarAbastecimento(dto, registro, transportadora, veiculo, veiculoTipo);
-         BioPortariaEntregaDejetos entregaDejetos = criarEntregaDejetos(dto, abastecimento);
-         registro.setEntregaDejetosId(entregaDejetos.getId());
-         registroRepository.save(registro);
+      @Transactional
+      public PortariaEntregaDejetosDTO registrarEntregaDeDejetos(PortariaEntregaDejetosDTO dto) {
+          BioTransportadora transportadora = getOrCreateTransportadora(dto);
+          BioVeiculoTipo veiculoTipo = getOrCreateVeiculoTipo(dto);
+          BioVeiculoTransportadora veiculo = getOrCreateVeiculo(dto, transportadora, veiculoTipo);
+          PortariaRegistro registro = criarRegistro(dto);
+          BioPortariaEntregaDejetos entregaDejetos = criarEntregaDejetos(dto, transportadora, veiculo);
+          
+          // Criar registro em bio_agenda_realizada com os dados da entrega
+          Long agendaRealizadaId = criarAgendaRealizada(entregaDejetos.getId(), dto, transportadora);
+          entregaDejetos.setAgendaRealizadaId(agendaRealizadaId);
+          entregaDejetosRepository.save(entregaDejetos);
+          
+          registro.setEntregaDejetosId(entregaDejetos.getId());
+          registroRepository.save(registro);
 
         // Retornar DTO preenchido com IDs gerados (apenas campos principais e entrega_dejetos)
         PortariaEntregaDejetosDTO response = new PortariaEntregaDejetosDTO();
@@ -56,22 +61,25 @@ public class PortariaEntregaDejetosService {
         response.setStatus(registro.getStatus());
         response.setOrigem_entrada(registro.getOrigemEntrada());
 
-        PortariaEntregaDejetosDTO.EntregaDejetosDTO entrega = new PortariaEntregaDejetosDTO.EntregaDejetosDTO();
-        if (dto.getEntrega_dejetos() != null) {
-            entrega.setProdutor_id(dto.getEntrega_dejetos().getProdutor_id());
-            entrega.setMotorista_nome(dto.getEntrega_dejetos().getMotorista_nome());
-            entrega.setCpf_motorista(dto.getEntrega_dejetos().getCpf_motorista());
-            entrega.setMotorista_id(dto.getEntrega_dejetos().getMotorista_id());
-            entrega.setTransportadora_id(transportadora != null ? String.valueOf(transportadora.getId()) : dto.getEntrega_dejetos().getTransportadora_id());
-            entrega.setTransportadora_manual(dto.getEntrega_dejetos().getTransportadora_manual());
-            entrega.setVeiculo_id(veiculo != null ? String.valueOf(veiculo.getId()) : dto.getEntrega_dejetos().getVeiculo_id());
-            entrega.setPlaca_manual(dto.getEntrega_dejetos().getPlaca_manual());
-            entrega.setTipo_veiculo(veiculoTipo != null ? veiculoTipo.getLabel() : dto.getEntrega_dejetos().getTipo_veiculo());
-            entrega.setPeso_inicial(dto.getEntrega_dejetos().getPeso_inicial());
-            entrega.setPeso_final(dto.getEntrega_dejetos().getPeso_final());
-            entrega.setDensidade(dto.getEntrega_dejetos().getDensidade());
-        }
-        response.setEntrega_dejetos(entrega);
+         PortariaEntregaDejetosDTO.EntregaDejetosDTO entrega = new PortariaEntregaDejetosDTO.EntregaDejetosDTO();
+         if (dto.getEntrega_dejetos() != null) {
+             entrega.setProdutor_id(dto.getEntrega_dejetos().getProdutor_id());
+             entrega.setMotorista_nome(dto.getEntrega_dejetos().getMotorista_nome());
+             entrega.setCpf_motorista(dto.getEntrega_dejetos().getCpf_motorista());
+             entrega.setMotorista_id(dto.getEntrega_dejetos().getMotorista_id());
+              entrega.setTransportadora_id(transportadora != null ? String.valueOf(transportadora.getId()) : dto.getEntrega_dejetos().getTransportadora_id());
+              entrega.setTransportadora_manual(dto.getEntrega_dejetos().getTransportadora_manual());
+              entrega.setVeiculo_id(veiculo != null ? String.valueOf(veiculo.getId()) : dto.getEntrega_dejetos().getVeiculo_id());
+              entrega.setPlaca(dto.getEntrega_dejetos().getPlaca());
+              entrega.setPlaca_manual(dto.getEntrega_dejetos().getPlaca_manual());
+             entrega.setTipo_veiculo(veiculoTipo != null ? veiculoTipo.getLabel() : dto.getEntrega_dejetos().getTipo_veiculo());
+             entrega.setPeso_inicial(dto.getEntrega_dejetos().getPeso_inicial());
+             entrega.setPeso_final(dto.getEntrega_dejetos().getPeso_final());
+             entrega.setDensidade(dto.getEntrega_dejetos().getDensidade());
+         }
+         // Retornar o ID da entrega_dejetos que foi gerado no banco
+         entrega.setId(String.valueOf(entregaDejetos.getId()));
+         response.setEntrega_dejetos(entrega);
         return response;
     }
 
@@ -193,54 +201,98 @@ public class PortariaEntregaDejetosService {
         return registroRepository.save(registro);
     }
 
-    private BioPortariaAbastecimento criarAbastecimento(PortariaEntregaDejetosDTO dto, PortariaRegistro registro, BioTransportadora transportadora, BioVeiculoTransportadora veiculo, BioVeiculoTipo veiculoTipo) {
-        BioPortariaAbastecimento abastecimento = new BioPortariaAbastecimento();
-        PortariaEntregaDejetosDTO.EntregaDejetosDTO ent = dto.getEntrega_dejetos();
-        abastecimento.setRegistroId(registro.getId());
-        abastecimento.setTransportadoraId(transportadora != null ? transportadora.getId() : null);
-        abastecimento.setTransportadoraManual(transportadora == null && ent != null ? ent.getTransportadora_manual() : null);
-        abastecimento.setVeiculoId(veiculo != null ? veiculo.getId() : null);
-        abastecimento.setPlacaManual(veiculo == null && ent != null ? ent.getPlaca_manual() : null);
-        abastecimento.setTipoVeiculo(veiculoTipo != null ? veiculoTipo.getLabel() : (ent != null ? ent.getTipo_veiculo() : null));
-        abastecimento.setMotoristaId(ent != null && ent.getMotorista_id() != null ? Long.valueOf(ent.getMotorista_id()) : null);
-        abastecimento.setMotoristaNome(ent != null ? ent.getMotorista_nome() : null);
-        abastecimento.setCpfMotorista(ent != null ? ent.getCpf_motorista() : null);
-        abastecimento.setPesoInicial(ent != null && ent.getPeso_inicial() != null ? ent.getPeso_inicial().doubleValue() : null);
-        abastecimento.setPesoFinal(ent != null && ent.getPeso_final() != null ? ent.getPeso_final().doubleValue() : null);
-        abastecimento.setCriadoEm(LocalDateTime.now());
-        abastecimento.setAtualizadoEm(LocalDateTime.now());
-        return abastecimentoRepository.save(abastecimento);
-    }
+       private BioPortariaEntregaDejetos criarEntregaDejetos(PortariaEntregaDejetosDTO dto, BioTransportadora transportadora, BioVeiculoTransportadora veiculo) {
+           BioPortariaEntregaDejetos entrega = new BioPortariaEntregaDejetos();
+           PortariaEntregaDejetosDTO.EntregaDejetosDTO ent = dto.getEntrega_dejetos();
+           // Nota: abastecimentoId foi removido - agora usamos entrega_dejetos_id na PortariaRegistro
+            entrega.setAgendaRealizadaId(null);
+            entrega.setProdutorId(ent != null ? (ent.getProdutor_id() != null ? Long.valueOf(ent.getProdutor_id()) : null) : null);
+            entrega.setMotoristaNome(ent != null ? ent.getMotorista_nome() : null);
+            entrega.setCpfMotorista(ent != null ? ent.getCpf_motorista() : null);
+            entrega.setMotoristaId(ent != null && ent.getMotorista_id() != null ? Long.valueOf(ent.getMotorista_id()) : null);
+            entrega.setTransportadoraId(ent != null && ent.getTransportadora_id() != null ? Long.valueOf(ent.getTransportadora_id()) : null);
+            entrega.setTransportadoraManual(ent != null ? ent.getTransportadora_manual() : null);
+             entrega.setVeiculoId(ent != null && ent.getVeiculo_id() != null ? tryParseLong(ent.getVeiculo_id()) : null);
+             entrega.setPlaca(ent != null ? ent.getPlaca() : null);
+             entrega.setPlacaManual(ent != null && (ent.getTransportadora_manual() != null || ent.getVeiculo_id() == null) ? ent.getPlaca_manual() : null);
+             entrega.setTipoVeiculo(ent != null ? ent.getTipo_veiculo() : null);
+            entrega.setPesoInicial(ent != null && ent.getPeso_inicial() != null ? ent.getPeso_inicial().doubleValue() : null);
+            entrega.setPesoFinal(ent != null && ent.getPeso_final() != null ? ent.getPeso_final().doubleValue() : null);
+            entrega.setDensidade(ent != null ? ent.getDensidade() : null);
+            entrega.setCriadoEm(LocalDateTime.now());
+            entrega.setAtualizadoEm(LocalDateTime.now());
+           return entregaDejetosRepository.save(entrega);
+       }
 
-      private BioPortariaEntregaDejetos criarEntregaDejetos(PortariaEntregaDejetosDTO dto, BioPortariaAbastecimento abastecimento) {
-          BioPortariaEntregaDejetos entrega = new BioPortariaEntregaDejetos();
-          PortariaEntregaDejetosDTO.EntregaDejetosDTO ent = dto.getEntrega_dejetos();
-          // Nota: abastecimentoId foi removido - agora usamos entrega_dejetos_id na PortariaRegistro
-           entrega.setAgendaRealizadaId(null);
-           entrega.setProdutorId(ent != null ? (ent.getProdutor_id() != null ? Long.valueOf(ent.getProdutor_id()) : null) : null);
-           entrega.setMotoristaNome(ent != null ? ent.getMotorista_nome() : null);
-           entrega.setCpfMotorista(ent != null ? ent.getCpf_motorista() : null);
-           entrega.setMotoristaId(ent != null && ent.getMotorista_id() != null ? Long.valueOf(ent.getMotorista_id()) : null);
-           entrega.setTransportadoraId(ent != null && ent.getTransportadora_id() != null ? Long.valueOf(ent.getTransportadora_id()) : null);
-           entrega.setTransportadoraManual(ent != null ? ent.getTransportadora_manual() : null);
-           entrega.setVeiculoId(null);
-           entrega.setPlacaManual(ent != null ? (ent.getVeiculo_id() != null ? ent.getVeiculo_id() : ent.getPlaca_manual()) : null);
-           entrega.setTipoVeiculo(ent != null ? ent.getTipo_veiculo() : null);
-           entrega.setPesoInicial(ent != null && ent.getPeso_inicial() != null ? ent.getPeso_inicial().doubleValue() : null);
-           entrega.setPesoFinal(ent != null && ent.getPeso_final() != null ? ent.getPeso_final().doubleValue() : null);
-           entrega.setDensidade(ent != null ? ent.getDensidade() : null);
-           entrega.setCriadoEm(LocalDateTime.now());
-           entrega.setAtualizadoEm(LocalDateTime.now());
-          return entregaDejetosRepository.save(entrega);
+      /**
+       * Obter entrega de dejetos por ID
+       */
+      public BioPortariaEntregaDejetos obterEntregaDeDejetos(Long id) {
+          return entregaDejetosRepository.findById(id)
+              .orElseThrow(() -> new RuntimeException("Entrega de dejetos não encontrada com ID: " + id));
       }
 
-     /**
-      * Obter entrega de dejetos por ID
-      */
-     public BioPortariaEntregaDejetos obterEntregaDeDejetos(Long id) {
-         return entregaDejetosRepository.findById(id)
-             .orElseThrow(() -> new RuntimeException("Entrega de dejetos não encontrada com ID: " + id));
-     }
+      /**
+       * ============================================================================
+       * MÉTODO PRIVADO: Criar Agenda Realizada
+       * ============================================================================
+       * Responsabilidade: Gravar os dados da entrega de dejetos na tabela 
+       *                   bio_agenda_realizada após o registro ser salvo
+       * 
+       * Recebe:
+       *   - entregaDejetosId: ID do registro que foi salvo em bio_portaria_entrega_dejetos
+       *   - dto: DTO com os dados que vieram do POST endpoint
+       *   - transportadora: Objeto da transportadora (criada ou obtida)
+       * 
+       * Retorna:
+       *   - Long: ID da agenda_realizada que foi gerada no banco
+       * 
+       * Fluxo:
+       *   1. Cria novo objeto BioAgendaRealizada
+       *   2. Preenche com dados do POST e da transportadora
+       *   3. Seta o entregaDejetosId (relacionamento com entrega_dejetos)
+       *   4. Salva no banco
+       *   5. Retorna o ID gerado
+       * 
+       * Dados salvos em bio_agenda_realizada:
+       *   - produtor_id: Do DTO (entrega_dejetos.produtor_id)
+       *   - data_real: Data de hoje (LocalDate.now())
+       *   - transportadora_nome: Do objeto transportadora obtido/criado
+       *   - quantidade_veiculos: Padrão = 1
+       *   - status: Padrão = "REALIZADO"
+       *   - entrega_dejetos_id: ID da entrega que foi salva (relacionamento)
+       *   - criado_em / atualizado_em: Data/hora atual
+       */
+      private Long criarAgendaRealizada(Long entregaDejetosId, PortariaEntregaDejetosDTO dto, BioTransportadora transportadora) {
+          BioAgendaRealizada agendaRealizada = new BioAgendaRealizada();
+          PortariaEntregaDejetosDTO.EntregaDejetosDTO ent = dto.getEntrega_dejetos();
+          
+          // Extrair produtor_id do DTO
+          agendaRealizada.setProdutorId(ent != null && ent.getProdutor_id() != null ? Long.valueOf(ent.getProdutor_id()) : null);
+          
+          // Seta a data real como a data de hoje
+          agendaRealizada.setDataReal(LocalDate.now());
+          
+          // Obtém o nome da transportadora (criada ou obtida)
+          agendaRealizada.setTransportadoraNome(transportadora != null ? transportadora.getNomeFantasia() : null);
+          
+          // Quantidade de veículos padrão = 1
+          agendaRealizada.setQuantidadeVeiculos(1);
+          
+          // Status padrão para agenda realizada
+          agendaRealizada.setStatus("REALIZADO");
+          
+          // Relacionamento com a entrega_dejetos que foi salva
+          agendaRealizada.setEntregaDejetosId(entregaDejetosId);
+          
+          // Datas de auditoria
+          agendaRealizada.setCriadoEm(LocalDateTime.now());
+          agendaRealizada.setAtualizadoEm(LocalDateTime.now());
+          
+          // Salva na tabela bio_agenda_realizada e retorna o ID gerado
+          BioAgendaRealizada saved = agendaRealizadaRepository.save(agendaRealizada);
+          return saved.getId();
+      }
 
     /**
      * Gera um CNPJ único (aleatório) para registros manuais de transportadora
@@ -254,6 +306,14 @@ public class PortariaEntregaDejetosService {
         int parte4 = random.nextInt(10000);
         int parte5 = random.nextInt(100);
         
-        return String.format("%02d.%03d.%03d/%04d-%02d", parte1, parte2, parte3, parte4, parte5);
-    }
-}
+         return String.format("%02d.%03d.%03d/%04d-%02d", parte1, parte2, parte3, parte4, parte5);
+     }
+
+     private Long tryParseLong(String value) {
+         try {
+             return Long.valueOf(value);
+         } catch (NumberFormatException e) {
+             return null;
+         }
+     }
+ }
