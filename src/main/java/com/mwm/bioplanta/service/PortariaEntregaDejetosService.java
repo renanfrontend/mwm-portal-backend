@@ -263,15 +263,17 @@ public class PortariaEntregaDejetosService {
        *   - entrega_dejetos_id: ID da entrega que foi salva (relacionamento)
        *   - criado_em / atualizado_em: Data/hora atual
        */
-      private Long criarAgendaRealizada(Long entregaDejetosId, PortariaEntregaDejetosDTO dto, BioTransportadora transportadora) {
-          BioAgendaRealizada agendaRealizada = new BioAgendaRealizada();
-          PortariaEntregaDejetosDTO.EntregaDejetosDTO ent = dto.getEntrega_dejetos();
-          
-          // Extrair produtor_id do DTO
-          agendaRealizada.setProdutorId(ent != null && ent.getProdutor_id() != null ? Long.valueOf(ent.getProdutor_id()) : null);
-          
-          // Seta a data real como a data de hoje
-          agendaRealizada.setDataReal(LocalDate.now());
+       private Long criarAgendaRealizada(Long entregaDejetosId, PortariaEntregaDejetosDTO dto, BioTransportadora transportadora) {
+           BioAgendaRealizada agendaRealizada = new BioAgendaRealizada();
+           PortariaEntregaDejetosDTO.EntregaDejetosDTO ent = dto.getEntrega_dejetos();
+           
+           // Extrair produtor_id do DTO
+           agendaRealizada.setProdutorId(ent != null && ent.getProdutor_id() != null ? Long.valueOf(ent.getProdutor_id()) : null);
+           
+           // Pega data_entrada e hora_entrada do DTO e junta em um LocalDateTime
+           LocalDate dataEntrada = dto.getData_entrada() != null ? LocalDate.parse(dto.getData_entrada()) : LocalDate.now();
+           LocalTime horaEntrada = dto.getHora_entrada() != null ? LocalTime.parse(dto.getHora_entrada()) : LocalTime.now();
+           agendaRealizada.setDataReal(dataEntrada.atTime(horaEntrada));
           
           // Obtém o nome da transportadora (criada ou obtida)
           agendaRealizada.setTransportadoraNome(transportadora != null ? transportadora.getNomeFantasia() : null);

@@ -21,7 +21,7 @@ public class BioAgendaRealizada {
     private Long produtorId;
 
     @Column(name = "data_real", nullable = false)
-    private LocalDate dataReal;
+    private LocalDateTime dataReal;
 
     @Column(name = "transportadora_nome")
     private String transportadoraNome;
