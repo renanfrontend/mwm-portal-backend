@@ -359,16 +359,16 @@ public class RelatorioExportacaoServiceImpl implements RelatorioExportacaoServic
 
     private String formatarDistancia(Integer distancia) {
         if (distancia == null || distancia == 0) {
-            return "0 Km";
+            return "0";
         }
-        return distancia + " Km";
+        return String.valueOf(distancia);
     }
 
     private String formatarTotalKm(Integer totalKm) {
         if (totalKm == null || totalKm == 0) {
-            return "0 Km";
+            return "0";
         }
-        return totalKm + " Km";
+        return String.valueOf(totalKm);
     }
 
     private String obterTransportadora(List<BioAgendaPlanejada> registros) {
