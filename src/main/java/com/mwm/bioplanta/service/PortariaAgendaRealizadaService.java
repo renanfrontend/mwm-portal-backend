@@ -9,6 +9,7 @@ import com.mwm.bioplanta.repository.BioProdutorRepository;
 import com.mwm.bioplanta.repository.BioEstabelecimentoRepository;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -72,31 +73,32 @@ public class PortariaAgendaRealizadaService {
             dataInicio.atStartOfDay(), 
             dataFim.atTime(23, 59, 59)
         );
-        
+
         // PASSO 2: Agrupar por produtor_id
         Map<Long, List<BioAgendaRealizada>> agendasPorProdutor = agendas.stream()
                 .collect(Collectors.groupingBy(BioAgendaRealizada::getProdutorId));
-        
+
         // PASSO 3: Montar o grid com uma linha por produtor
         List<AgendaRealizadaSemanalDTO> resultado = new ArrayList<>();
-        
+        // Para ordenação: Map de produtorId -> dataReal mais recente
+        Map<Long, LocalDateTime> dataMaisRecentePorProdutor = new HashMap<>();
+
         for (Map.Entry<Long, List<BioAgendaRealizada>> entry : agendasPorProdutor.entrySet()) {
             Long produtorId = entry.getKey();
             List<BioAgendaRealizada> agendasDoProdutor = entry.getValue();
-            
+
             // Buscar dados do produtor
             BioProdutor produtor = produtorRepository.findById(produtorId).orElse(null);
-            
+
             if (produtor == null) {
                 continue; // Pular se produtor não encontrado
             }
-            
+
             // Buscar estabelecimento para obter numero_estabelecimento
-            // Um produtor pode ter múltiplos estabelecimentos, pega o primeiro ativo ou o primeiro
             BioEstabelecimento estabelecimento = estabelecimentoRepository
                     .findFirstByBioProdutorIdOrderByIdAsc(produtorId)
                     .orElse(null);
-            
+
             // Contar entregas por dia da semana
             Integer domingo = contarEntregasPorDia(agendasDoProdutor, dataInicio, 0);      // Domingo
             Integer segunda = contarEntregasPorDia(agendasDoProdutor, dataInicio, 1);      // Segunda
@@ -105,18 +107,16 @@ public class PortariaAgendaRealizadaService {
             Integer quinta = contarEntregasPorDia(agendasDoProdutor, dataInicio, 4);       // Quinta
             Integer sexta = contarEntregasPorDia(agendasDoProdutor, dataInicio, 5);        // Sexta
             Integer sabado = contarEntregasPorDia(agendasDoProdutor, dataInicio, 6);       // Sábado
-            
+
             // Calcular total de entregas na semana
             Integer totalEntregas = domingo + segunda + terca + quarta + quinta + sexta + sabado;
-            
+
             // Calcular total de KM (distancia_km * total de entregas)
-            // distancia_km é BigDecimal, converter para Double
             Double totalKm = produtor.getDistanciaKm() != null ? 
                     produtor.getDistanciaKm().doubleValue() * totalEntregas : 0.0;
-            
+
             // Montar a linha do grid
             AgendaRealizadaSemanalDTO linha = new AgendaRealizadaSemanalDTO();
-            // Usar numero_estabelecimento ao invés de codigo_produtor
             linha.setNumeroEstabelecimento(estabelecimento != null ? estabelecimento.getNumeroEstabelecimento() : "");
             linha.setNomeProduto(produtor.getNome());
             linha.setDistanciaKm(produtor.getDistanciaKm() != null ? produtor.getDistanciaKm().doubleValue() : null);
@@ -130,10 +130,30 @@ public class PortariaAgendaRealizadaService {
             linha.setSabado(sabado);
             linha.setTotalEntregas(totalEntregas);
             linha.setTotalKm(totalKm);
-            
+
+            // Descobrir a dataReal mais recente desse produtor
+            LocalDateTime dataMaisRecente = agendasDoProdutor.stream()
+                .map(BioAgendaRealizada::getDataReal)
+                .max(LocalDateTime::compareTo)
+                .orElse(LocalDateTime.MIN);
+            dataMaisRecentePorProdutor.put(produtorId, dataMaisRecente);
+
             resultado.add(linha);
         }
-        
+
+        // Ordenar resultado do mais recente para o mais antigo
+        resultado.sort((a, b) -> {
+            Long idA = agendasPorProdutor.entrySet().stream()
+                .filter(e -> e.getValue().stream().anyMatch(ag -> ag.getProdutorId().equals(a.getNumeroEstabelecimento())))
+                .map(Map.Entry::getKey).findFirst().orElse(null);
+            Long idB = agendasPorProdutor.entrySet().stream()
+                .filter(e -> e.getValue().stream().anyMatch(ag -> ag.getProdutorId().equals(b.getNumeroEstabelecimento())))
+                .map(Map.Entry::getKey).findFirst().orElse(null);
+            LocalDateTime dataA = idA != null ? dataMaisRecentePorProdutor.get(idA) : LocalDateTime.MIN;
+            LocalDateTime dataB = idB != null ? dataMaisRecentePorProdutor.get(idB) : LocalDateTime.MIN;
+            return dataB.compareTo(dataA);
+        });
+
         return resultado;
     }
     

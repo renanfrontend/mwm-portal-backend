@@ -3,6 +3,11 @@ package com.mwm.bioplanta.repository;
 import com.mwm.bioplanta.model.BioPortariaAbastecimento;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+
 public interface BioPortariaAbastecimentoRepository extends JpaRepository<BioPortariaAbastecimento, Long> {
-    // Métodos customizados se necessário
+    Optional<BioPortariaAbastecimento> findByRegistroId(Long registroId);
+    List<BioPortariaAbastecimento> findByRegistroIdIn(Collection<Long> registroIds);
 }
