@@ -1,7 +1,9 @@
 package com.mwm.bioplanta.service;
 
 import com.mwm.bioplanta.dto.*;
+import com.mwm.bioplanta.model.BioPortariaAbastecimento;
 import com.mwm.bioplanta.model.PortariaRegistro;
+import com.mwm.bioplanta.repository.BioPortariaAbastecimentoRepository;
 import com.mwm.bioplanta.repository.BioPortariaEntregaDejetosRepository;
 import com.mwm.bioplanta.repository.BioVeiculoTransportadoraRepository;
 import com.mwm.bioplanta.repository.BioTransportadoraRepository;
@@ -17,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,6 +43,9 @@ public class PortariaRegistroService {
 
     @Autowired
     private BioPortariaEntregaDejetosRepository entregaDejetosRepository;
+
+    @Autowired
+    private BioPortariaAbastecimentoRepository abastecimentoRepository;
     
     @Autowired
     private BioVeiculoTransportadoraRepository veiculoRepository;
@@ -57,15 +66,19 @@ public class PortariaRegistroService {
         try {
             int pageNum = page != null ? page : 0;
             int size = pageSize != null ? pageSize : 5;
-            
-            Pageable pageable = PageRequest.of(pageNum, size);
+
+            Pageable pageable = PageRequest.of(pageNum, size, org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "dataEntrada", "horaEntrada"));
             Page<PortariaRegistro> pageResult = portariaRegistroRepository.findAll(pageable);
-            
+
+                Map<Long, BioPortariaAbastecimento> abastecimentosPorRegistroId = carregarAbastecimentos(pageResult.getContent());
+                Map<Long, com.mwm.bioplanta.model.BioPortariaEntregaDejetos> entregasPorId = carregarEntregas(pageResult.getContent());
+                Map<Long, com.mwm.bioplanta.model.BioVeiculoTransportadora> veiculosPorId = carregarVeiculos(abastecimentosPorRegistroId, entregasPorId);
+
             List<PortariaRegistroDTO> dtos = pageResult.getContent()
                     .stream()
-                    .map(this::mapToDTO)
+                    .map(registro -> mapToDTO(registro, abastecimentosPorRegistroId, entregasPorId, veiculosPorId))
                     .collect(Collectors.toList());
-            
+
             PaginationResponseDTO<PortariaRegistroDTO> response = new PaginationResponseDTO<>();
             response.setData(dtos);
             response.setPage(pageResult.getNumber());
@@ -253,6 +266,29 @@ public class PortariaRegistroService {
      * Busca dados relacionados de acordo com o tipo de registro
      */
     private PortariaRegistroDTO mapToDTO(PortariaRegistro registro) {
+        Map<Long, BioPortariaAbastecimento> abastecimentosPorRegistroId = "ABASTECIMENTO".equals(registro.getTipoRegistro())
+            ? abastecimentoRepository.findByRegistroId(registro.getId())
+                .map(abastecimento -> Collections.singletonMap(registro.getId(), abastecimento))
+                .orElseGet(Collections::emptyMap)
+            : Collections.emptyMap();
+
+        Map<Long, com.mwm.bioplanta.model.BioPortariaEntregaDejetos> entregasPorId = "ENTREGA_DEJETOS".equals(registro.getTipoRegistro())
+            && registro.getEntregaDejetosId() != null
+            ? entregaDejetosRepository.findById(registro.getEntregaDejetosId())
+                .map(entrega -> Collections.singletonMap(registro.getEntregaDejetosId(), entrega))
+                .orElseGet(Collections::emptyMap)
+            : Collections.emptyMap();
+
+        Map<Long, com.mwm.bioplanta.model.BioVeiculoTransportadora> veiculosPorId = carregarVeiculos(abastecimentosPorRegistroId, entregasPorId);
+
+        return mapToDTO(registro, abastecimentosPorRegistroId, entregasPorId, veiculosPorId);
+        }
+
+        private PortariaRegistroDTO mapToDTO(
+            PortariaRegistro registro,
+            Map<Long, BioPortariaAbastecimento> abastecimentosPorRegistroId,
+            Map<Long, com.mwm.bioplanta.model.BioPortariaEntregaDejetos> entregasPorId,
+            Map<Long, com.mwm.bioplanta.model.BioVeiculoTransportadora> veiculosPorId) {
         PortariaRegistroDTO dto = new PortariaRegistroDTO();
         dto.setId(registro.getId());
         dto.setDataEntrada(registro.getDataEntrada() != null ? registro.getDataEntrada().toString() : null);
@@ -269,8 +305,36 @@ public class PortariaRegistroService {
         dto.setAtualizadoEm(registro.getAtualizadoEm());
         
          // Buscar dados relacionados de acordo com o tipo de registro
+         if ("ABASTECIMENTO".equals(registro.getTipoRegistro())) {
+             BioPortariaAbastecimento abastecimento = abastecimentosPorRegistroId.get(registro.getId());
+             if (abastecimento != null) {
+                 PortariaAbastecimentoDTO abastecimentoDTO = new PortariaAbastecimentoDTO();
+                 abastecimentoDTO.setId(abastecimento.getId());
+                 abastecimentoDTO.setRegistroId(abastecimento.getRegistroId());
+                 abastecimentoDTO.setMotoristaId(abastecimento.getMotoristaId());
+                 abastecimentoDTO.setMotoristaNome(abastecimento.getMotoristaNome());
+                 abastecimentoDTO.setCpfMotorista(abastecimento.getCpfMotorista());
+                 abastecimentoDTO.setTransportadoraId(abastecimento.getTransportadoraId());
+                 abastecimentoDTO.setTransportadoraManual(abastecimento.getTransportadoraManual());
+                 abastecimentoDTO.setVeiculoId(abastecimento.getVeiculoId());
+                 if (abastecimento.getPlaca() != null && !abastecimento.getPlaca().isBlank()) {
+                     abastecimentoDTO.setPlaca(abastecimento.getPlaca());
+                 } else if (abastecimento.getVeiculoId() != null) {
+                     var veiculo = veiculosPorId.get(abastecimento.getVeiculoId());
+                     if (veiculo != null) {
+                         abastecimentoDTO.setPlaca(veiculo.getPlaca());
+                     }
+                 }
+                 abastecimentoDTO.setPlacaManual(abastecimento.getPlacaManual());
+                 abastecimentoDTO.setTipoVeiculo(abastecimento.getTipoVeiculo());
+                 abastecimentoDTO.setPesoInicial(abastecimento.getPesoInicial());
+                 abastecimentoDTO.setPesoFinal(abastecimento.getPesoFinal());
+                 dto.setAbastecimento(abastecimentoDTO);
+             }
+         }
+
          if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaDejetosId() != null) {
-             var entregaDejetos = entregaDejetosRepository.findById(registro.getEntregaDejetosId()).orElse(null);
+             var entregaDejetos = entregasPorId.get(registro.getEntregaDejetosId());
              if (entregaDejetos != null) {
                  PortariaEntregaDejetosDTO.EntregaDejetosDTO entregaDTO = new PortariaEntregaDejetosDTO.EntregaDejetosDTO();
                  entregaDTO.setProdutor_id(String.valueOf(entregaDejetos.getProdutorId()));
@@ -287,7 +351,7 @@ public class PortariaRegistroService {
                  
                  // Fluxo 1: Seleção normal - obter placa do veículo
                  if (entregaDejetos.getVeiculoId() != null) {
-                     var veiculo = veiculoRepository.findById(entregaDejetos.getVeiculoId()).orElse(null);
+                     var veiculo = veiculosPorId.get(entregaDejetos.getVeiculoId());
                      if (veiculo != null && veiculo.getPlaca() != null) {
                          entregaDTO.setPlaca(veiculo.getPlaca());
                      }
@@ -303,5 +367,51 @@ public class PortariaRegistroService {
         }
         
         return dto;
+    }
+
+    private Map<Long, BioPortariaAbastecimento> carregarAbastecimentos(List<PortariaRegistro> registros) {
+        Set<Long> registroIds = registros.stream()
+                .filter(registro -> "ABASTECIMENTO".equals(registro.getTipoRegistro()))
+                .map(PortariaRegistro::getId)
+                .collect(Collectors.toSet());
+
+        if (registroIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return abastecimentoRepository.findByRegistroIdIn(registroIds).stream()
+                .collect(Collectors.toMap(BioPortariaAbastecimento::getRegistroId, Function.identity()));
+    }
+
+    private Map<Long, com.mwm.bioplanta.model.BioPortariaEntregaDejetos> carregarEntregas(List<PortariaRegistro> registros) {
+        Set<Long> entregaIds = registros.stream()
+                .filter(registro -> "ENTREGA_DEJETOS".equals(registro.getTipoRegistro()))
+                .map(PortariaRegistro::getEntregaDejetosId)
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        if (entregaIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return entregaDejetosRepository.findAllById(entregaIds).stream()
+                .collect(Collectors.toMap(com.mwm.bioplanta.model.BioPortariaEntregaDejetos::getId, Function.identity()));
+    }
+
+    private Map<Long, com.mwm.bioplanta.model.BioVeiculoTransportadora> carregarVeiculos(
+            Map<Long, BioPortariaAbastecimento> abastecimentosPorRegistroId,
+            Map<Long, com.mwm.bioplanta.model.BioPortariaEntregaDejetos> entregasPorId) {
+        Set<Long> veiculoIds = java.util.stream.Stream.concat(
+                    abastecimentosPorRegistroId.values().stream().map(BioPortariaAbastecimento::getVeiculoId),
+                    entregasPorId.values().stream().map(com.mwm.bioplanta.model.BioPortariaEntregaDejetos::getVeiculoId))
+                .filter(java.util.Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        if (veiculoIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return veiculoRepository.findAllById(veiculoIds).stream()
+                .collect(Collectors.toMap(com.mwm.bioplanta.model.BioVeiculoTransportadora::getId, Function.identity()));
     }
 }

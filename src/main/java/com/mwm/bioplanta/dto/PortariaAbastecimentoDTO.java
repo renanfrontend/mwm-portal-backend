@@ -5,10 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import io.swagger.v3.oas.annotations.media.Schema;
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-import java.time.LocalDateTime;
-import java.math.BigDecimal;
 
 /**
  * DTO para Portaria Abastecimento
@@ -28,9 +24,6 @@ public class PortariaAbastecimentoDTO {
     @Schema(description = "ID do registro principal")
     private Long registroId;
 
-    @Schema(description = "ID do produtor (cooperado)")
-    private Long produtorId;
-
     @Schema(description = "ID do motorista")
     private Long motoristaId;
 
@@ -46,34 +39,22 @@ public class PortariaAbastecimentoDTO {
     @Schema(description = "Nome manual da transportadora (se não encontrado no cadastro)", example = "Transportadora XYZ")
     private String transportadoraManual;
 
-    @Schema(description = "Nome da transportadora (lookup)", example = "Transportadora ABC")
-    private String transportadoraNome;
-
     @Schema(description = "ID do veículo")
     private Long veiculoId;
 
+    @Schema(description = "Placa do veículo (lookup ou snapshot gravado)", example = "ABC-1234")
+    private String placa;
+
     @Schema(description = "Placa manual (se veículo não encontrado)", example = "ABC-1234")
     private String placaManual;
-
-    @Schema(description = "Placa do veículo (lookup)", example = "ABC-1234")
-    private String placa;
 
     @Schema(description = "Tipo de veículo", example = "Caminhão", 
             allowableValues = {"Caminhão", "Carro", "Moto"})
     private String tipoVeiculo;
 
     @Schema(description = "Peso inicial em kg", example = "5000")
-    private BigDecimal pesoInicial;
+    private Double pesoInicial;
 
     @Schema(description = "Peso final em kg", example = "4500")
-    private BigDecimal pesoFinal;
-
-    @Schema(description = "Densidade em g/cm³", example = "1025")
-    private String densidade;
-
-    @Schema(description = "Data de criação")
-    private LocalDateTime criadoEm;
-
-    @Schema(description = "Data de atualização")
-    private LocalDateTime atualizadoEm;
+    private Double pesoFinal;
 }

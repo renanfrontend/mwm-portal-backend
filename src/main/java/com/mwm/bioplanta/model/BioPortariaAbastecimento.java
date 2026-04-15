@@ -28,6 +28,9 @@ public class BioPortariaAbastecimento {
     @Column(name = "placa_manual")
     private String placaManual;
 
+    @Column(name = "placa")
+    private String placa;
+
     @Column(name = "tipo_veiculo")
     private String tipoVeiculo;
 

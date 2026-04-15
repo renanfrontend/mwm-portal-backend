@@ -79,7 +79,7 @@ az containerapp update \
     SPRING_PROFILES_ACTIVE=hml \
     SPRING_JPA_HIBERNATE_DDL_AUTO=none \
     SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=dbo \
-    SPRING_DATASOURCE_URL="jdbc:sqlserver://prgsazsqldb.database.windows.net:1433;databaseName=bioplanta;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;" \
+    SPRING_DATASOURCE_URL="jdbc:sqlserver://dgrssqlsbioplanta.database.windows.net:1433;databaseName=bioplanta;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;" \
     SPRINGDOC_SWAGGER_UI_ENABLED=TRUE \
     SPRING_DATASOURCE_DRIVER_CLASS_NAME="com.microsoft.sqlserver.jdbc.SQLServerDriver" \
     SPRING_SQL_INIT_MODE=never
