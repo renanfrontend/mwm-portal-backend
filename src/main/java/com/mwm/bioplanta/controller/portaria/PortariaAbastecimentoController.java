@@ -1,7 +1,10 @@
 package com.mwm.bioplanta.controller.portaria;
 
+import com.mwm.bioplanta.dto.portaria.abastecimento.PortariaAbastecimentoExclusaoRequestDTO;
 import com.mwm.bioplanta.dto.portaria.PortariaAbastecimentoDTO;
 import com.mwm.bioplanta.dto.portaria.PortariaAbastecimentoRequestDTO;
+import com.mwm.bioplanta.dto.portaria.exclusao.ExclusaoPortariaResponseDTO;
+import com.mwm.bioplanta.service.portaria.abastecimento.PortariaAbastecimentoExclusaoService;
 import com.mwm.bioplanta.service.portaria.PortariaAbastecimentoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -21,10 +24,14 @@ import org.springframework.web.bind.annotation.RestController;
 public class PortariaAbastecimentoController {
 
     private final PortariaAbastecimentoService abastecimentoService;
+    private final PortariaAbastecimentoExclusaoService abastecimentoExclusaoService;
 
     @Autowired
-    public PortariaAbastecimentoController(PortariaAbastecimentoService abastecimentoService) {
+    public PortariaAbastecimentoController(
+            PortariaAbastecimentoService abastecimentoService,
+            PortariaAbastecimentoExclusaoService abastecimentoExclusaoService) {
         this.abastecimentoService = abastecimentoService;
+        this.abastecimentoExclusaoService = abastecimentoExclusaoService;
     }
 
     @PostMapping
@@ -58,5 +65,15 @@ public class PortariaAbastecimentoController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Erro ao registrar abastecimento: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/excluir")
+    @Operation(
+        summary = "Excluir abastecimento da portaria",
+        description = "Exclui o registro principal da portaria, o abastecimento associado e, quando aplicável, os cadastros manuais de transporte do fluxo Outros."
+    )
+    public ResponseEntity<ExclusaoPortariaResponseDTO> excluirAbastecimento(
+            @RequestBody PortariaAbastecimentoExclusaoRequestDTO request) {
+        return ResponseEntity.ok(abastecimentoExclusaoService.excluir(request));
     }
 }
