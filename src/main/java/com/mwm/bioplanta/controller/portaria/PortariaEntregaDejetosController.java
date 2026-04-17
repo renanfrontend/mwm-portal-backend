@@ -1,6 +1,9 @@
 package com.mwm.bioplanta.controller.portaria;
 
 import com.mwm.bioplanta.dto.portaria.PortariaEntregaDejetosDTO;
+import com.mwm.bioplanta.dto.portaria.entrega.PortariaEntregaDejetosExclusaoRequestDTO;
+import com.mwm.bioplanta.dto.portaria.exclusao.ExclusaoPortariaResponseDTO;
+import com.mwm.bioplanta.service.portaria.entrega.PortariaEntregaDejetosExclusaoService;
 import com.mwm.bioplanta.service.portaria.PortariaEntregaDejetosService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,9 +29,13 @@ public class PortariaEntregaDejetosController {
 
 
     private final PortariaEntregaDejetosService entregaDejetosService;
+    private final PortariaEntregaDejetosExclusaoService entregaDejetosExclusaoService;
 
-    public PortariaEntregaDejetosController(PortariaEntregaDejetosService entregaDejetosService) {
+    public PortariaEntregaDejetosController(
+            PortariaEntregaDejetosService entregaDejetosService,
+            PortariaEntregaDejetosExclusaoService entregaDejetosExclusaoService) {
         this.entregaDejetosService = entregaDejetosService;
+        this.entregaDejetosExclusaoService = entregaDejetosExclusaoService;
     }
 
     @GetMapping("/{id}")
@@ -78,5 +85,15 @@ public class PortariaEntregaDejetosController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PostMapping("/excluir")
+    @Operation(
+        summary = "Excluir entrega de dejetos da portaria",
+        description = "Exclui o registro principal da portaria, a entrega de dejetos associada, a agenda realizada vinculada quando existir e, se aplicável, os cadastros manuais de transporte."
+    )
+    public ResponseEntity<ExclusaoPortariaResponseDTO> excluirEntregaDeDejetos(
+            @RequestBody PortariaEntregaDejetosExclusaoRequestDTO request) {
+        return ResponseEntity.ok(entregaDejetosExclusaoService.excluir(request));
     }
 }

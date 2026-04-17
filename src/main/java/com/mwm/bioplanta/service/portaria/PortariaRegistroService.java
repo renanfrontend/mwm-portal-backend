@@ -448,6 +448,8 @@ public class PortariaRegistroService {
             BioPortariaEntregaDejetos entregaDejetos,
             Map<Long, BioVeiculoTransportadora> veiculosPorId) {
         PortariaEntregaDejetosDTO.EntregaDejetosDTO entregaDTO = new PortariaEntregaDejetosDTO.EntregaDejetosDTO();
+        // Preencher o campo id
+        entregaDTO.setId(entregaDejetos.getId() != null ? String.valueOf(entregaDejetos.getId()) : null);
         entregaDTO.setProdutor_id(entregaDejetos.getProdutorId() != null ? String.valueOf(entregaDejetos.getProdutorId()) : null);
         entregaDTO.setMotorista_nome(entregaDejetos.getMotoristaNome());
         entregaDTO.setCpf_motorista(entregaDejetos.getCpfMotorista());
