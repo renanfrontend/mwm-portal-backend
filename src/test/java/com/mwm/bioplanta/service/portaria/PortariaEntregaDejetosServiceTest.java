@@ -79,7 +79,7 @@ class PortariaEntregaDejetosServiceTest {
 
         BioVeiculoTransportadora veiculoSalvo = new BioVeiculoTransportadora();
         veiculoSalvo.setId(77L);
-        veiculoSalvo.setPlaca("ABC1D23");
+        veiculoSalvo.setPlaca("ABC-1D23"); // Placa já formatada, igual ao que o sistema salva
         veiculoSalvo.setBioTransportadora(transportadoraSalva);
 
         when(transportadoraRepository.save(org.mockito.ArgumentMatchers.any(BioTransportadora.class))).thenReturn(transportadoraSalva);
@@ -111,8 +111,8 @@ class PortariaEntregaDejetosServiceTest {
 
         assertEquals("55", response.getEntrega_dejetos().getTransportadora_id());
         assertEquals("77", response.getEntrega_dejetos().getVeiculo_id());
-        assertEquals("ABC1D23", response.getEntrega_dejetos().getPlaca());
-        assertEquals("ABC 1D23", response.getEntrega_dejetos().getPlaca_manual());
+        assertEquals("ABC-1D23", response.getEntrega_dejetos().getPlaca());
+        assertEquals("ABC-1D23", response.getEntrega_dejetos().getPlaca_manual());
         assertEquals("Concluído", response.getStatus());
         assertEquals("ESPONTANEA", response.getOrigem_entrada());
 
@@ -121,7 +121,7 @@ class PortariaEntregaDejetosServiceTest {
         BioPortariaEntregaDejetos entregaPersistida = entregaCaptor.getAllValues().get(entregaCaptor.getAllValues().size() - 1);
         assertEquals(55L, entregaPersistida.getTransportadoraId());
         assertEquals(77L, entregaPersistida.getVeiculoId());
-        assertEquals("ABC1D23", entregaPersistida.getPlaca());
+        assertEquals("ABC-1D23", entregaPersistida.getPlaca());
         assertEquals(111L, entregaPersistida.getAgendaRealizadaId());
 
         ArgumentCaptor<PortariaRegistro> registroCaptor = ArgumentCaptor.forClass(PortariaRegistro.class);

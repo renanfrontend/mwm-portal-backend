@@ -1,4 +1,6 @@
+
 package com.mwm.bioplanta.service.portaria;
+import com.mwm.bioplanta.util.PlacaUtil;
 
 import com.mwm.bioplanta.dto.portaria.PortariaEntregaDejetosDTO;
 import com.mwm.bioplanta.model.BioAgendaRealizada;
@@ -77,11 +79,12 @@ public class PortariaEntregaDejetosService {
              entrega.setMotorista_nome(dto.getEntrega_dejetos().getMotorista_nome());
              entrega.setCpf_motorista(dto.getEntrega_dejetos().getCpf_motorista());
              entrega.setMotorista_id(dto.getEntrega_dejetos().getMotorista_id());
-              entrega.setTransportadora_id(transportadora != null ? String.valueOf(transportadora.getId()) : dto.getEntrega_dejetos().getTransportadora_id());
-              entrega.setTransportadora_manual(dto.getEntrega_dejetos().getTransportadora_manual());
-              entrega.setVeiculo_id(veiculo != null ? String.valueOf(veiculo.getId()) : dto.getEntrega_dejetos().getVeiculo_id());
-              entrega.setPlaca(veiculo != null ? veiculo.getPlaca() : dto.getEntrega_dejetos().getPlaca());
-              entrega.setPlaca_manual(dto.getEntrega_dejetos().getPlaca_manual());
+             entrega.setTransportadora_id(transportadora != null ? String.valueOf(transportadora.getId()) : dto.getEntrega_dejetos().getTransportadora_id());
+             entrega.setTransportadora_manual(dto.getEntrega_dejetos().getTransportadora_manual());
+             entrega.setVeiculo_id(veiculo != null ? String.valueOf(veiculo.getId()) : dto.getEntrega_dejetos().getVeiculo_id());
+             entrega.setPlaca(veiculo != null ? veiculo.getPlaca() : dto.getEntrega_dejetos().getPlaca());
+             // Sempre retornar placa manual formatada
+             entrega.setPlaca_manual(PlacaUtil.formatarPlacaMercosul(dto.getEntrega_dejetos().getPlaca_manual()));
              entrega.setTipo_veiculo(veiculoTipo != null ? veiculoTipo.getLabel() : dto.getEntrega_dejetos().getTipo_veiculo());
              entrega.setPeso_inicial(dto.getEntrega_dejetos().getPeso_inicial());
              entrega.setPeso_final(dto.getEntrega_dejetos().getPeso_final());
@@ -165,7 +168,8 @@ public class PortariaEntregaDejetosService {
         
         // Prioridade 1: Se tem placa_manual e transportadora, procurar/criar por placa
         if (ent != null && ent.getPlaca_manual() != null && transportadora != null && !ent.getPlaca_manual().trim().isEmpty()) {
-            String placaManual = ent.getPlaca_manual().replaceAll("\\s", "").toUpperCase();
+            // Formatar placa manual ao salvar
+            String placaManual = PlacaUtil.formatarPlacaMercosul(ent.getPlaca_manual());
             
             // Procurar na transportadora específica
             veiculo = veiculoRepository.findByBioTransportadoraId(transportadora.getId()).stream()
@@ -214,23 +218,26 @@ public class PortariaEntregaDejetosService {
        private BioPortariaEntregaDejetos criarEntregaDejetos(PortariaEntregaDejetosDTO dto, BioTransportadora transportadora, BioVeiculoTransportadora veiculo) {
            BioPortariaEntregaDejetos entrega = new BioPortariaEntregaDejetos();
            PortariaEntregaDejetosDTO.EntregaDejetosDTO ent = dto.getEntrega_dejetos();
-           // Nota: abastecimentoId foi removido - agora usamos entrega_dejetos_id na PortariaRegistro
-            entrega.setAgendaRealizadaId(null);
-            entrega.setProdutorId(ent != null ? (ent.getProdutor_id() != null ? Long.valueOf(ent.getProdutor_id()) : null) : null);
-            entrega.setMotoristaNome(ent != null ? ent.getMotorista_nome() : null);
-            entrega.setCpfMotorista(ent != null ? ent.getCpf_motorista() : null);
-            entrega.setMotoristaId(ent != null && ent.getMotorista_id() != null ? Long.valueOf(ent.getMotorista_id()) : null);
-            entrega.setTransportadoraId(transportadora != null ? transportadora.getId() : tryParseLong(ent != null ? ent.getTransportadora_id() : null));
-            entrega.setTransportadoraManual(ent != null ? ent.getTransportadora_manual() : null);
-             entrega.setVeiculoId(veiculo != null ? veiculo.getId() : tryParseLong(ent != null ? ent.getVeiculo_id() : null));
-             entrega.setPlaca(veiculo != null ? veiculo.getPlaca() : ent != null ? ent.getPlaca() : null);
-             entrega.setPlacaManual(ent != null && (ent.getTransportadora_manual() != null || ent.getVeiculo_id() == null) ? ent.getPlaca_manual() : null);
-             entrega.setTipoVeiculo(ent != null ? ent.getTipo_veiculo() : null);
-            entrega.setPesoInicial(ent != null && ent.getPeso_inicial() != null ? ent.getPeso_inicial().doubleValue() : null);
-            entrega.setPesoFinal(ent != null && ent.getPeso_final() != null ? ent.getPeso_final().doubleValue() : null);
-            entrega.setDensidade(ent != null ? ent.getDensidade() : null);
-            entrega.setCriadoEm(LocalDateTime.now());
-            entrega.setAtualizadoEm(LocalDateTime.now());
+           entrega.setAgendaRealizadaId(null);
+           entrega.setProdutorId(ent != null ? (ent.getProdutor_id() != null ? Long.valueOf(ent.getProdutor_id()) : null) : null);
+           entrega.setMotoristaNome(ent != null ? ent.getMotorista_nome() : null);
+           entrega.setCpfMotorista(ent != null ? ent.getCpf_motorista() : null);
+           entrega.setMotoristaId(ent != null && ent.getMotorista_id() != null ? Long.valueOf(ent.getMotorista_id()) : null);
+           entrega.setTransportadoraId(transportadora != null ? transportadora.getId() : tryParseLong(ent != null ? ent.getTransportadora_id() : null));
+           entrega.setTransportadoraManual(ent != null ? ent.getTransportadora_manual() : null);
+           entrega.setVeiculoId(veiculo != null ? veiculo.getId() : tryParseLong(ent != null ? ent.getVeiculo_id() : null));
+           // Formatar placa ao salvar
+           String placa = veiculo != null ? veiculo.getPlaca() : ent != null ? ent.getPlaca() : null;
+           entrega.setPlaca(PlacaUtil.formatarPlacaMercosul(placa));
+           // Formatar placa manual ao salvar
+           String placaManual = ent != null && (ent.getTransportadora_manual() != null || ent.getVeiculo_id() == null) ? ent.getPlaca_manual() : null;
+           entrega.setPlacaManual(PlacaUtil.formatarPlacaMercosul(placaManual));
+           entrega.setTipoVeiculo(ent != null ? ent.getTipo_veiculo() : null);
+           entrega.setPesoInicial(ent != null && ent.getPeso_inicial() != null ? ent.getPeso_inicial().doubleValue() : null);
+           entrega.setPesoFinal(ent != null && ent.getPeso_final() != null ? ent.getPeso_final().doubleValue() : null);
+           entrega.setDensidade(ent != null ? ent.getDensidade() : null);
+           entrega.setCriadoEm(LocalDateTime.now());
+           entrega.setAtualizadoEm(LocalDateTime.now());
            return entregaDejetosRepository.save(entrega);
        }
 
