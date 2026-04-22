@@ -11,6 +11,7 @@ import com.mwm.bioplanta.repository.portaria.PortariaRegistroRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.mwm.bioplanta.util.PlacaUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -93,15 +94,21 @@ public class PortariaAbastecimentoService {
             abastecimento.setTransportadoraManual(null);
             abastecimento.setPlacaManual(null);
             abastecimento.setVeiculoId(request.getAbastecimento().getVeiculo_id());
-            abastecimento.setPlaca(resolverPlacaAbastecimento(request));
+            // Formatar placa do veículo ao salvar
+            String placaFormatada = PlacaUtil.formatarPlacaMercosul(resolverPlacaAbastecimento(request));
+            abastecimento.setPlaca(placaFormatada);
             return;
         }
 
         abastecimento.setTransportadoraId(null);
         abastecimento.setTransportadoraManual(request.getAbastecimento().getTransportadora_manual());
-        abastecimento.setPlacaManual(request.getAbastecimento().getPlaca_manual());
+        // Formatar placa manual ao salvar
+        String placaManualFormatada = PlacaUtil.formatarPlacaMercosul(request.getAbastecimento().getPlaca_manual());
+        abastecimento.setPlacaManual(placaManualFormatada);
         abastecimento.setVeiculoId(null);
-        abastecimento.setPlaca(normalizarTexto(request.getAbastecimento().getPlaca()));
+        // Formatar placa ao salvar
+        String placaFormatada = PlacaUtil.formatarPlacaMercosul(normalizarTexto(request.getAbastecimento().getPlaca()));
+        abastecimento.setPlaca(placaFormatada);
     }
 
     private PortariaAbastecimentoDTO montarResposta(PortariaRegistro registro, BioPortariaAbastecimento abastecimento) {
@@ -115,7 +122,8 @@ public class PortariaAbastecimentoService {
         dto.setTransportadoraManual(abastecimento.getTransportadoraManual());
         dto.setVeiculoId(abastecimento.getVeiculoId());
         dto.setPlaca(abastecimento.getPlaca());
-        dto.setPlacaManual(abastecimento.getPlacaManual());
+        // Sempre retornar placa manual formatada
+        dto.setPlacaManual(PlacaUtil.formatarPlacaMercosul(abastecimento.getPlacaManual()));
         dto.setTipoVeiculo(abastecimento.getTipoVeiculo());
         dto.setPesoInicial(abastecimento.getPesoInicial());
         dto.setPesoFinal(abastecimento.getPesoFinal());
