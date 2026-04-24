@@ -6,12 +6,14 @@ import com.mwm.bioplanta.dto.portaria.PortariaEntregaDejetosDTO;
 import com.mwm.bioplanta.dto.portaria.PortariaRegistroDTO;
 import com.mwm.bioplanta.model.BioPortariaAbastecimento;
 import com.mwm.bioplanta.model.BioPortariaEntregaDejetos;
+import com.mwm.bioplanta.model.BioPortariaEntregaInsumo;
 import com.mwm.bioplanta.model.BioVeiculoTransportadora;
 import com.mwm.bioplanta.model.PortariaRegistro;
 import com.mwm.bioplanta.repository.cadastro.BioTransportadoraRepository;
 import com.mwm.bioplanta.repository.cadastro.BioVeiculoTransportadoraRepository;
 import com.mwm.bioplanta.repository.portaria.BioPortariaAbastecimentoRepository;
 import com.mwm.bioplanta.repository.portaria.BioPortariaEntregaDejetosRepository;
+import com.mwm.bioplanta.repository.portaria.BioPortariaEntregaInsumoRepository;
 import com.mwm.bioplanta.repository.portaria.PortariaRegistroRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +53,9 @@ public class PortariaRegistroService {
 
     @Autowired
     private BioPortariaAbastecimentoRepository abastecimentoRepository;
+
+    @Autowired
+    private BioPortariaEntregaInsumoRepository entregaInsumoRepository;
     
     @Autowired
     private BioVeiculoTransportadoraRepository veiculoRepository;
@@ -241,14 +246,21 @@ public class PortariaRegistroService {
              }
          }
 
-         if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaDejetosId() != null) {
-             var entregaDejetos = dadosRelacionados.entregasPorId().get(registro.getEntregaDejetosId());
-             if (entregaDejetos != null) {
-                 dto.setEntrega_dejetos(criarEntregaDejetosDTO(entregaDejetos, dadosRelacionados.veiculosPorId()));
+if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaDejetosId() != null) {
+              var entregaDejetos = dadosRelacionados.entregasPorId().get(registro.getEntregaDejetosId());
+              if (entregaDejetos != null) {
+                  dto.setEntrega_dejetos(criarEntregaDejetosDTO(entregaDejetos, dadosRelacionados.veiculosPorId()));
+              }
+         }
+
+         if ("ENTREGA_INSUMO".equals(registro.getTipoRegistro())) {
+             BioPortariaEntregaInsumo entregaInsumo = dadosRelacionados.entregasInsumoPorRegistroId().get(registro.getId());
+             if (entregaInsumo != null) {
+                 dto.setEntrega_insumo(criarEntregaInsumoDTO(entregaInsumo, dadosRelacionados.veiculosPorId()));
              }
-        }
-        
-        return dto;
+         }
+         
+         return dto;
     }
 
     private Map<Long, BioPortariaAbastecimento> carregarAbastecimentos(List<PortariaRegistro> registros) {
@@ -280,12 +292,29 @@ public class PortariaRegistroService {
                 .collect(Collectors.toMap(BioPortariaEntregaDejetos::getId, Function.identity()));
     }
 
+    private Map<Long, BioPortariaEntregaInsumo> carregarEntregasInsumo(List<PortariaRegistro> registros) {
+        Set<Long> registroIds = registros.stream()
+                .filter(registro -> "ENTREGA_INSUMO".equals(registro.getTipoRegistro()))
+                .map(PortariaRegistro::getId)
+                .collect(Collectors.toSet());
+
+        if (registroIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return entregaInsumoRepository.findByRegistroIdIn(registroIds).stream()
+                .collect(Collectors.toMap(BioPortariaEntregaInsumo::getRegistroId, Function.identity()));
+    }
+
             private Map<Long, BioVeiculoTransportadora> carregarVeiculos(
             Map<Long, BioPortariaAbastecimento> abastecimentosPorRegistroId,
-                Map<Long, BioPortariaEntregaDejetos> entregasPorId) {
+            Map<Long, BioPortariaEntregaDejetos> entregasPorId,
+            Map<Long, BioPortariaEntregaInsumo> entregasInsumoPorRegistroId) {
         Set<Long> veiculoIds = java.util.stream.Stream.concat(
-                    abastecimentosPorRegistroId.values().stream().map(BioPortariaAbastecimento::getVeiculoId),
-                    entregasPorId.values().stream().map(BioPortariaEntregaDejetos::getVeiculoId))
+                    java.util.stream.Stream.concat(
+                        abastecimentosPorRegistroId.values().stream().map(BioPortariaAbastecimento::getVeiculoId),
+                        entregasPorId.values().stream().map(BioPortariaEntregaDejetos::getVeiculoId)),
+                    entregasInsumoPorRegistroId.values().stream().map(BioPortariaEntregaInsumo::getVeiculoId))
                 .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -413,8 +442,9 @@ public class PortariaRegistroService {
     private DadosRelacionadosPortaria carregarDadosRelacionados(List<PortariaRegistro> registros) {
         Map<Long, BioPortariaAbastecimento> abastecimentosPorRegistroId = carregarAbastecimentos(registros);
         Map<Long, BioPortariaEntregaDejetos> entregasPorId = carregarEntregas(registros);
-        Map<Long, BioVeiculoTransportadora> veiculosPorId = carregarVeiculos(abastecimentosPorRegistroId, entregasPorId);
-        return new DadosRelacionadosPortaria(abastecimentosPorRegistroId, entregasPorId, veiculosPorId);
+        Map<Long, BioPortariaEntregaInsumo> entregasInsumoPorRegistroId = carregarEntregasInsumo(registros);
+        Map<Long, BioVeiculoTransportadora> veiculosPorId = carregarVeiculos(abastecimentosPorRegistroId, entregasPorId, entregasInsumoPorRegistroId);
+        return new DadosRelacionadosPortaria(abastecimentosPorRegistroId, entregasPorId, entregasInsumoPorRegistroId, veiculosPorId);
     }
 
     private PortariaAbastecimentoDTO criarAbastecimentoDTO(
@@ -480,9 +510,50 @@ public class PortariaRegistroService {
         return entregaDTO;
     }
 
+    private Map<String, Object> criarEntregaInsumoDTO(BioPortariaEntregaInsumo entrega, Map<Long, BioVeiculoTransportadora> veiculosPorId) {
+        Map<String, Object> entregaDTO = new java.util.HashMap<>();
+        entregaDTO.put("id", entrega.getId());
+        entregaDTO.put("motorista_nome", entrega.getMotorista());
+        entregaDTO.put("cpf_motorista", entrega.getCpfPassaporte());
+        entregaDTO.put("empresa", entrega.getEmpresa());
+        entregaDTO.put("nota_fiscal", entrega.getNotaFiscal());
+        entregaDTO.put("peso_inicial", entrega.getPesoInicial());
+        entregaDTO.put("peso_final", entrega.getPesoFinal());
+        entregaDTO.put("tipo_veiculo", entrega.getTipoVeiculo());
+        entregaDTO.put("transportadora_manual", entrega.getTransportadoraManual());
+        entregaDTO.put("placa_manual", entrega.getPlaca());
+        entregaDTO.put("observacao", entrega.getObservacao());
+        entregaDTO.put("veiculo_id", entrega.getVeiculoId());
+        
+        if (entrega.getDataSaida() != null) {
+            entregaDTO.put("data_saida", entrega.getDataSaida().toString());
+        }
+        if (entrega.getHorarioSaida() != null) {
+            entregaDTO.put("hora_saida", entrega.getHorarioSaida().toString());
+        }
+
+        if (entrega.getPlaca() != null && !entrega.getPlaca().isBlank()) {
+            entregaDTO.put("placa", entrega.getPlaca());
+        } else if (entrega.getVeiculoId() != null) {
+            var veiculo = veiculosPorId.get(entrega.getVeiculoId());
+            if (veiculo != null) {
+                if (veiculo.getPlaca() != null) {
+                    entregaDTO.put("placa", veiculo.getPlaca());
+                }
+                if (veiculo.getBioTransportadora() != null) {
+                    entregaDTO.put("transportadora_id", veiculo.getBioTransportadora().getId());
+                    entregaDTO.put("transportadora_nome", veiculo.getBioTransportadora().getNomeFantasia());
+                }
+            }
+        }
+
+        return entregaDTO;
+    }
+
     private record DadosRelacionadosPortaria(
             Map<Long, BioPortariaAbastecimento> abastecimentosPorRegistroId,
             Map<Long, BioPortariaEntregaDejetos> entregasPorId,
+            Map<Long, BioPortariaEntregaInsumo> entregasInsumoPorRegistroId,
             Map<Long, BioVeiculoTransportadora> veiculosPorId) {
     }
 }
