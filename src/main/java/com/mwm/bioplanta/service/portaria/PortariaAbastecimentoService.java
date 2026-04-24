@@ -41,6 +41,10 @@ public class PortariaAbastecimentoService {
 
         PortariaRegistro registro = salvarRegistroPrincipal(request, statusNormalizado, origemNormalizada, agora);
         BioPortariaAbastecimento abastecimento = salvarRegistroAbastecimento(request, registro.getId(), agora);
+        
+        // Atualiza o registro com o ID do abastecimento
+        registro.setAbastecimentoId(abastecimento.getId());
+        registroRepository.save(registro);
 
         return montarResposta(registro, abastecimento);
     }

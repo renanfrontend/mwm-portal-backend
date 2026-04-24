@@ -63,6 +63,9 @@ public class PortariaRegistroService {
     @Autowired
     private BioTransportadoraRepository transportadoraRepository;
 
+    @Autowired
+    private PortariaEntregaDejetosService entregaDejetosService;
+
     /**
      * Lista todos os registros com paginação
      * 
@@ -152,11 +155,27 @@ public class PortariaRegistroService {
         try {
             PortariaRegistro registro = buscarRegistroPorId(id);
 
+            LocalDate dataEntradaAnterior = registro.getDataEntrada();
+            LocalTime horaEntradaAnterior = registro.getHoraEntrada();
+
             aplicarAtualizacoesRegistro(registro, registroDTO);
             registro.setAtualizadoEm(LocalDateTime.now());
             PortariaRegistro updated = portariaRegistroRepository.save(registro);
             
             atualizarDensidadeEntregaDejetos(updated, registroDTO);
+            atualizarEntregaInsumo(updated, registroDTO);
+            atualizarAbastecimento(updated, registroDTO);
+
+            if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) 
+                && registroDTO.getDataEntrada() != null
+                && (registro.getEntregaDejetosId() != null)) {
+                LocalDate novaData = LocalDate.parse(registroDTO.getDataEntrada());
+                LocalTime novaHora = registroDTO.getHoraEntrada() != null 
+                    ? LocalTime.parse(registroDTO.getHoraEntrada()) 
+                    : horaEntradaAnterior;
+                entregaDejetosService.atualizarAgendaRealizadaData(
+                    registro.getEntregaDejetosId(), novaData, novaHora);
+            }
             
             log.info("Registro de portaria atualizado - ID: {}", updated.getId());
             return mapToDTO(updated);
@@ -423,19 +442,147 @@ if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaD
 
         if (!"ENTREGA_DEJETOS".equals(registro.getTipoRegistro())
                 || registro.getEntregaDejetosId() == null
-                || registroDTO.getEntrega_dejetos() == null
-                || registroDTO.getEntrega_dejetos().getDensidade() == null) {
+                || registroDTO.getEntrega_dejetos() == null) {
             return;
         }
 
-        log.info("Salvando densidade: {}", registroDTO.getEntrega_dejetos().getDensidade());
-
         var entregaDejetos = entregaDejetosRepository.findById(registro.getEntregaDejetosId()).orElse(null);
         if (entregaDejetos != null) {
-            entregaDejetos.setDensidade(registroDTO.getEntrega_dejetos().getDensidade());
-            entregaDejetos.setAtualizadoEm(LocalDateTime.now());
-            entregaDejetosRepository.save(entregaDejetos);
-            entregaDejetosRepository.flush();
+            var dto = registroDTO.getEntrega_dejetos();
+            boolean alterou = false;
+            
+            if (dto.getPeso_inicial() != null) {
+                entregaDejetos.setPesoInicial(dto.getPeso_inicial().doubleValue());
+                log.info("Salvando peso inicial: {}", dto.getPeso_inicial());
+                alterou = true;
+            }
+            if (dto.getPeso_final() != null) {
+                entregaDejetos.setPesoFinal(dto.getPeso_final().doubleValue());
+                log.info("Salvando peso final: {}", dto.getPeso_final());
+                alterou = true;
+            }
+            if (dto.getDensidade() != null) {
+                entregaDejetos.setDensidade(dto.getDensidade());
+                log.info("Salvando densidade: {}", dto.getDensidade());
+                alterou = true;
+            }
+            
+            if (alterou) {
+                entregaDejetos.setAtualizadoEm(LocalDateTime.now());
+                entregaDejetosRepository.save(entregaDejetos);
+                entregaDejetosRepository.flush();
+            }
+        }
+    }
+
+    private void atualizarEntregaInsumo(PortariaRegistro registro, PortariaRegistroDTO registroDTO) {
+        log.info("ENTREGA_INSUMO check - tipo: {}, insumoId: {}, entrega_insumo: {}",
+                registro.getTipoRegistro(), registro.getEntregaInsumoId(), registroDTO.getEntrega_insumo());
+
+        if (!"ENTREGA_INSUMO".equals(registro.getTipoRegistro())
+                || registroDTO.getEntrega_insumo() == null) {
+            return;
+        }
+
+        // Se não tem ID, busca pelo registroId
+        Long entregaInsumoId = registro.getEntregaInsumoId();
+        if (entregaInsumoId == null) {
+            entregaInsumoId = entregaInsumoRepository.findByRegistroId(registro.getId())
+                    .map(BioPortariaEntregaInsumo::getId).orElse(null);
+        }
+        
+        if (entregaInsumoId == null) {
+            log.info("EntregaInsumo não encontrada para registro ID: {}", registro.getId());
+            return;
+        }
+
+        var entregaInsumo = entregaInsumoRepository.findById(entregaInsumoId).orElse(null);
+        if (entregaInsumo != null) {
+            var dto = registroDTO.getEntrega_insumo();
+            boolean alterou = false;
+            
+            Object pesoInicialObj = dto.get("peso_inicial");
+            if (pesoInicialObj != null) {
+                Double pesoInicial = toDouble(pesoInicialObj);
+                if (pesoInicial != null) {
+                    entregaInsumo.setPesoInicial(pesoInicial);
+                    log.info("Salvando peso inicial: {}", pesoInicial);
+                    alterou = true;
+                }
+            }
+            Object pesoFinalObj = dto.get("peso_final");
+            if (pesoFinalObj != null) {
+                Double pesoFinal = toDouble(pesoFinalObj);
+                if (pesoFinal != null) {
+                    entregaInsumo.setPesoFinal(pesoFinal);
+                    log.info("Salvando peso final: {}", pesoFinal);
+                    alterou = true;
+                }
+            }
+            
+            if (alterou) {
+                entregaInsumo.setAtualizadoEm(LocalDateTime.now());
+                entregaInsumoRepository.save(entregaInsumo);
+                entregaInsumoRepository.flush();
+            }
+        }
+    }
+
+    private void atualizarAbastecimento(PortariaRegistro registro, PortariaRegistroDTO registroDTO) {
+        log.info("ABASTECIMENTO check - tipo: {}, abastecimentoId: {}, abastecimento: {}",
+                registro.getTipoRegistro(), registro.getAbastecimentoId(), registroDTO.getAbastecimento());
+        log.info("DEBUG - registro.getAbastecimentoId(): {}, registro.getId(): {}", registro.getAbastecimentoId(), registro.getId());
+
+        if (!"ABASTECIMENTO".equals(registro.getTipoRegistro())
+                || registroDTO.getAbastecimento() == null) {
+            log.info("ABASTECIMENTO - condição de entrada não atendida");
+            return;
+        }
+
+        Long abastecimentoId = registro.getAbastecimentoId();
+        if (abastecimentoId == null) {
+            log.info("Buscando abastecimento por registroId: {}", registro.getId());
+            abastecimentoId = abastecimentoRepository.findByRegistroId(registro.getId())
+                    .map(BioPortariaAbastecimento::getId).orElse(null);
+            log.info("AbastecimentoId encontrado: {}", abastecimentoId);
+        }
+        
+        if (abastecimentoId == null) {
+            log.info("Abastecimento não encontrado para registro ID: {}", registro.getId());
+            return;
+        }
+
+        var abastecimento = abastecimentoRepository.findById(abastecimentoId).orElse(null);
+        if (abastecimento != null) {
+            var dto = registroDTO.getAbastecimento();
+            boolean alterou = false;
+            
+            if (dto.getPeso_inicial() != null) {
+                abastecimento.setPesoInicial(dto.getPeso_inicial());
+                log.info("Salvando peso inicial: {}", dto.getPeso_inicial());
+                alterou = true;
+            }
+            if (dto.getPeso_final() != null) {
+                abastecimento.setPesoFinal(dto.getPeso_final());
+                log.info("Salvando peso final: {}", dto.getPeso_final());
+                alterou = true;
+            }
+            
+            if (alterou) {
+                abastecimento.setAtualizadoEm(LocalDateTime.now());
+                abastecimentoRepository.save(abastecimento);
+                abastecimentoRepository.flush();
+            }
+        }
+    }
+
+    private Double toDouble(Object value) {
+        if (value == null) return null;
+        if (value instanceof Number) return ((Number) value).doubleValue();
+        try {
+            return Double.parseDouble(value.toString());
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 
@@ -471,6 +618,11 @@ if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaD
         abastecimentoDTO.setTipoVeiculo(abastecimento.getTipoVeiculo());
         abastecimentoDTO.setPesoInicial(abastecimento.getPesoInicial());
         abastecimentoDTO.setPesoFinal(abastecimento.getPesoFinal());
+        
+        // Campos snake_case para compatibilidade frontend
+        abastecimentoDTO.setPeso_inicial(abastecimento.getPesoInicial());
+        abastecimentoDTO.setPeso_final(abastecimento.getPesoFinal());
+        
         return abastecimentoDTO;
     }
 
