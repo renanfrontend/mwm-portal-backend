@@ -308,12 +308,28 @@ public class PortariaEntregaDejetosService {
           agendaRealizada.setCriadoEm(LocalDateTime.now());
           agendaRealizada.setAtualizadoEm(LocalDateTime.now());
           
-          // Salva na tabela bio_agenda_realizada e retorna o ID gerado
+// Salva na tabela bio_agenda_realizada e retorna o ID gerado
           BioAgendaRealizada saved = agendaRealizadaRepository.save(agendaRealizada);
           return saved.getId();
       }
 
-    /**
+      /**
+       * Atualiza a data_real na tabela bio_agenda_realizada quando a data da entrega é alterada
+       */
+      public void atualizarAgendaRealizadaData(Long entregaDejetosId, LocalDate novaData, LocalTime novaHora) {
+          if (entregaDejetosId == null) return;
+          
+          var agenda = agendaRealizadaRepository.findByEntregaDejetosId(entregaDejetosId);
+          if (agenda.isPresent()) {
+              BioAgendaRealizada agendaRealizada = agenda.get();
+              LocalDateTime novaDataHora = novaData.atTime(novaHora != null ? novaHora : LocalTime.NOON);
+              agendaRealizada.setDataReal(novaDataHora);
+              agendaRealizada.setAtualizadoEm(LocalDateTime.now());
+              agendaRealizadaRepository.save(agendaRealizada);
+          }
+      }
+
+      /**
      * Gera um CNPJ único (aleatório) para registros manuais de transportadora
      * Formato: XX.XXX.XXX/XXXX-XX
      */

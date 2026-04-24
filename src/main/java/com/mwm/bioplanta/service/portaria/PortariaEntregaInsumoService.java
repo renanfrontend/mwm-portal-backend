@@ -138,6 +138,10 @@ public class PortariaEntregaInsumoService {
         entrega.setCriadoEm(agora);
         entrega.setAtualizadoEm(agora);
         entrega = entregaInsumoRepository.save(entrega);
+        
+        // Atualiza o registro com o ID da entrega
+        registro.setEntregaInsumoId(entrega.getId());
+        registroRepository.save(registro);
 
         PortariaEntregaInsumoResponseDTO resp = new PortariaEntregaInsumoResponseDTO();
         resp.setId(entrega.getId());

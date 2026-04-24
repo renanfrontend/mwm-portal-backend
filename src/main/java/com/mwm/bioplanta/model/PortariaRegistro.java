@@ -61,6 +61,12 @@ public class PortariaRegistro {
     @Column(name = "entrega_dejetos_id")
     private Long entregaDejetosId;
 
+    @Column(name = "entrega_insumo_id")
+    private Long entregaInsumoId;
+
+    @Column(name = "abastecimento_id")
+    private Long abastecimentoId;
+
     @Column(name = "criado_em")
     private LocalDateTime criadoEm;
 

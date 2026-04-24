@@ -57,4 +57,8 @@ public class PortariaAbastecimentoDTO {
 
     @Schema(description = "Peso final em kg", example = "4500")
     private Double pesoFinal;
+
+    // Campos extras para compatibilidade frontend (snake_case)
+    private Double peso_inicial;
+    private Double peso_final;
 }
