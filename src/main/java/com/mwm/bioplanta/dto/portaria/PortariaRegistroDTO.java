@@ -75,5 +75,8 @@ public class PortariaRegistroDTO {
     @Schema(description = "Dados de Entrega de Dejetos (quando tipoRegistro = ENTREGA_DEJETOS)")
     private PortariaEntregaDejetosDTO.EntregaDejetosDTO entrega_dejetos;
 
+    @Schema(description = "Dados de Entrega de Insumo (quando tipoRegistro = ENTREGA_INSUMO)")
+    private java.util.Map<String, Object> entrega_insumo;
+
     // Outros tipos podem ser adicionados conforme necessário
 }

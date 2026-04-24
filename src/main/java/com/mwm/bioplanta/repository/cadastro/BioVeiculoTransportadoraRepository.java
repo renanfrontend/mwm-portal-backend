@@ -20,7 +20,7 @@ public interface BioVeiculoTransportadoraRepository extends JpaRepository<BioVei
 
     @Query("SELECT v FROM BioVeiculoTransportadora v " +
            "JOIN FETCH v.bioTransportadora t " +
-           "WHERE t.origemCadastro IS NULL OR t.origemCadastro != 'FORMULARIO_ENTREGA_DEJETOS' " +
+           "WHERE t.origemCadastro = 'FORMULARIO_LOGISTICA' " +
            "ORDER BY t.nomeFantasia ASC")
     List<BioVeiculoTransportadora> findAllExcluindoEntregaDejetos();
 }
