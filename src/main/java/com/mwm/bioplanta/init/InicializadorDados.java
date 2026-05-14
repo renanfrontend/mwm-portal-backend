@@ -12,12 +12,10 @@ import com.mwm.bioplanta.model.BioPlanta;
 import com.mwm.bioplanta.model.BioTransportadora;
 import com.mwm.bioplanta.model.BioVeiculoTipo;
 import com.mwm.bioplanta.model.BioVeiculoCombustivel;
-import com.mwm.bioplanta.model.BioFiliada;
-import com.mwm.bioplanta.repository.cadastro.BioFiliadaRepository;
-import com.mwm.bioplanta.repository.cadastro.BioPlantaRepository;
-import com.mwm.bioplanta.repository.cadastro.BioTransportadoraRepository;
-import com.mwm.bioplanta.repository.cadastro.BioVeiculoCombustivelRepository;
-import com.mwm.bioplanta.repository.cadastro.BioVeiculoTipoRepository;
+import com.mwm.bioplanta.repository.BioPlantaRepository;
+import com.mwm.bioplanta.repository.BioTransportadoraRepository;
+import com.mwm.bioplanta.repository.BioVeiculoTipoRepository;
+import com.mwm.bioplanta.repository.BioVeiculoCombustivelRepository;
 
 @Component
 public class InicializadorDados implements CommandLineRunner {
@@ -35,7 +33,7 @@ public class InicializadorDados implements CommandLineRunner {
     private BioVeiculoCombustivelRepository bioVeiculoCombustivelRepository;
 
     @Autowired
-    private BioFiliadaRepository bioFiliadaRepository;
+    private com.mwm.bioplanta.repository.BioFiliadaRepository bioFiliadaRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -61,7 +59,7 @@ public class InicializadorDados implements CommandLineRunner {
 
         // Verifica se existem filiadas, senão cria as padrões
         if (bioFiliadaRepository.count() == 0 && planta != null) {
-            List<BioFiliada> filiadas = Arrays.asList(
+            List<com.mwm.bioplanta.model.BioFiliada> filiadas = Arrays.asList(
                 createFiliada(planta, "Primato", "FIL001", "Toledo", "PR"),
                 createFiliada(planta, "Agrocampo", "FIL002", "Cascavel", "PR")
             );
@@ -69,8 +67,8 @@ public class InicializadorDados implements CommandLineRunner {
         }
     }
 
-    private BioFiliada createFiliada(BioPlanta planta, String nome, String codigo, String cidade, String estado) {
-        BioFiliada filiada = new BioFiliada();
+    private com.mwm.bioplanta.model.BioFiliada createFiliada(BioPlanta planta, String nome, String codigo, String cidade, String estado) {
+        com.mwm.bioplanta.model.BioFiliada filiada = new com.mwm.bioplanta.model.BioFiliada();
         filiada.setBioPlanta(planta);
         filiada.setNome(nome);
         filiada.setCodigoFiliada(codigo);

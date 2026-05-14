@@ -56,14 +56,9 @@ public class BioProdutor {
     @Schema(description = "Tipo de pessoa (PF/PJ)")
     private String tipoPessoa;
 
-
     @Column(name = "status")
     @Schema(description = "Status do produtor (A/I)")
     private String status;
-
-    @Column(name = "distancia_km", precision = 8, scale = 2)
-    @Schema(description = "Distância em km do produtor até a planta", example = "12.50")
-    private java.math.BigDecimal distanciaKm;
 
     @Column(name = "data_cadastro")
     @Schema(description = "Data de cadastro")
@@ -76,12 +71,4 @@ public class BioProdutor {
     @Column(name = "atualizado_em")
     @Schema(description = "Data de atualização")
     private LocalDateTime atualizadoEm;
-    @Column(name = "certificado")
-    @Schema(description = "Produtor certificado (N/S)", example = "N")
-    private String certificado;
-
-
-    @Column(name = "doam_dejetos")
-    @Schema(description = "Produtor doa dejetos (S/N)", example = "S")
-    private String doamDejetos;
 }

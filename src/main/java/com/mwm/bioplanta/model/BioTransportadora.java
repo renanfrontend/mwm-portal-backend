@@ -76,10 +76,6 @@ public class BioTransportadora {
     @Schema(description = "Status da transportadora", example = "Ativo")
     private String status;
 
-    @Column(name = "origem_cadastro", columnDefinition = "VARCHAR(50)")
-    @Schema(description = "Origem do cadastro da transportadora", example = "FORMULARIO_LOGISTICA", allowableValues = {"FORMULARIO_LOGISTICA", "FORMULARIO_ENTREGA_DEJETOS"})
-    private String origemCadastro;
-
     @Column(name = "criado_em")
     @Schema(description = "Data de criação", example = "2023-01-01T00:00:00")
     private LocalDateTime criadoEm;

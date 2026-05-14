@@ -50,7 +50,10 @@ public class BioVeiculoTransportadora {
     @Schema(description = "Tipo de abastecimento", example = "Diesel")
     private String tipoAbastecimento;
 
-    @Column(name = "status")
+    @Schema(description = "TAG do veículo (obrigatório para Biometano)", example = "AABBCC1122334455")
+    private String tag;
+
+    @Column(name = "status", columnDefinition = "NVARCHAR(MAX)")
     @Schema(description = "Status do veículo", example = "Ativo")
     private String status = "Ativo";
 

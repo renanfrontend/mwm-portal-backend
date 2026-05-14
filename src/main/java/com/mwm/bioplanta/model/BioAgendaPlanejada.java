@@ -51,8 +51,6 @@ public class BioAgendaPlanejada {
     @Schema(description = "Distancia em km", example = "35")
     private Integer distanciaKm;
 
-
-
     @Column(name = "transportadora")
     @Schema(description = "Transportadora responsavel", example = "Primato")
     private String transportadora;
