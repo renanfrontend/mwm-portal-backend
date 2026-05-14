@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice(assignableTypes = {
         PortariaAbastecimentoController.class,
-        PortariaEntregaDejetosController.class
+        PortariaEntregaDejetosController.class,
+        PortariaExpedicaoController.class
 })
 public class PortariaExclusaoExceptionHandler {
 

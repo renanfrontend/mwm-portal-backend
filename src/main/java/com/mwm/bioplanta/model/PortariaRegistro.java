@@ -67,6 +67,9 @@ public class PortariaRegistro {
     @Column(name = "abastecimento_id")
     private Long abastecimentoId;
 
+    @Column(name = "expedicao_id")
+    private Long expedicaoId;
+
     @Column(name = "criado_em")
     private LocalDateTime criadoEm;
 

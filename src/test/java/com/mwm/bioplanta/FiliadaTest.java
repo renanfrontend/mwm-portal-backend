@@ -1,8 +1,8 @@
 package com.mwm.bioplanta;
 
-import com.mwm.bioplanta.controller.FiliadaController;
-import com.mwm.bioplanta.dto.FiliadaResponseDTO;
-import com.mwm.bioplanta.service.FiliadaService;
+import com.mwm.bioplanta.controller.cadastro.FiliadaController;
+import com.mwm.bioplanta.dto.cadastro.FiliadaResponseDTO;
+import com.mwm.bioplanta.service.cadastro.FiliadaService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;

@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -29,6 +28,7 @@ public class BioProducao {
     @ManyToOne
     @JoinColumn(name = "bio_estabelecimento_id", nullable = false)
     @Schema(description = "Estabelecimento associado", requiredMode = Schema.RequiredMode.REQUIRED)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private BioEstabelecimento bioEstabelecimento;
 
     @Column(name = "ano_safra")

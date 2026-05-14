@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+################################################################################
+# Autor: Antonio Marcos de Souza Santos
+# Cargo: Fullstack Developer
+# Projeto: BioPlantas Backend
+# Data: 2026-05-04
+# -----------------------------------------------------------------------------
+# Este script foi desenvolvido e mantido por Antonio Marcos de Souza Santos
+# (Fullstack Developer) para automação de deploy do ambiente de produção.
+################################################################################
 set -euo pipefail
 
 # ============================================================================
@@ -115,7 +124,8 @@ az containerapp update \
     SPRING_DATASOURCE_URL="jdbc:sqlserver://prgsazsqldb.database.windows.net:1433;databaseName=bioplanta;encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;" \
     SPRINGDOC_SWAGGER_UI_ENABLED=TRUE \
     SPRING_DATASOURCE_DRIVER_CLASS_NAME="com.microsoft.sqlserver.jdbc.SQLServerDriver" \
-    SPRING_SQL_INIT_MODE=never
+    SPRING_SQL_INIT_MODE=never \
+    CORS_ALLOWED_ORIGINS="*"
 
 echo "✅ Container App atualizado!"
 echo ""

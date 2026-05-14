@@ -1,12 +1,12 @@
 package com.mwm.bioplanta.dto.portaria;
 
+import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.annotation.JsonNaming;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import io.swagger.v3.oas.annotations.media.Schema;
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 
 import java.time.LocalDateTime;
 
@@ -77,6 +77,9 @@ public class PortariaRegistroDTO {
 
     @Schema(description = "Dados de Entrega de Insumo (quando tipoRegistro = ENTREGA_INSUMO)")
     private java.util.Map<String, Object> entrega_insumo;
+
+        @Schema(description = "Dados de Expedição (quando tipoRegistro = EXPEDICAO)")
+        private PortariaExpedicaoResponseDTO expedicao;
 
     // Outros tipos podem ser adicionados conforme necessário
 }

@@ -32,6 +32,7 @@ public class BioEstabelecimento {
 
     @OneToMany(mappedBy = "bioEstabelecimento", fetch = FetchType.LAZY)
     @Schema(description = "Produções associadas ao estabelecimento")
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private List<BioProducao> bioProducao;
 
     @Column(name = "codigo_estabelecimento")
@@ -62,7 +63,6 @@ public class BioEstabelecimento {
     
     // Telefone removido pois não existe na tabela bio_estabelecimento
     // @Schema(description = "Telefone")
-    // private String telefone;
 
     // Campos migrados de BioPropriedade que fazem sentido estar no local físico (Estabelecimento)
     @Schema(description = "Município")

@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+################################################################################
+# Autor: Antonio Marcos de Souza Santos
+# Cargo: Fullstack Developer
+# Projeto: BioPlantas Backend
+# Data: 2026-05-04
+# -----------------------------------------------------------------------------
+# Este script foi desenvolvido e mantido por Antonio Marcos de Souza Santos
+# (Fullstack Developer) para automação de build do ambiente de homologação.
+################################################################################
 set -euo pipefail
 
 # ============================================================================
@@ -19,6 +28,9 @@ set -euo pipefail
 # Próximo passo:
 #   ./deploy-hml.sh 202603301530
 # ============================================================================
+
+# Define schema do banco para homologação
+export DB_SCHEMA=dbo
 
 if [ "${1-}" = "" ]; then
   echo "❌ Erro: TAG da imagem não fornecida!"

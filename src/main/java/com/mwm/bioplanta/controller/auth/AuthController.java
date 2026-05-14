@@ -7,6 +7,7 @@ import com.mwm.bioplanta.dto.auth.LoginResponse;
 import com.mwm.bioplanta.dto.auth.RegisterRequest;
 import com.mwm.bioplanta.model.User;
 import com.mwm.bioplanta.service.auth.UserService;
+import com.mwm.bioplanta.service.auth.UsuarioPerfilPermissaoService;
 import com.mwm.bioplanta.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,9 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final UserService userService;
+    private final UsuarioPerfilPermissaoService usuarioPerfilPermissaoService;
 
-    public AuthController(UserService userService) {
+    public AuthController(UserService userService, UsuarioPerfilPermissaoService usuarioPerfilPermissaoService) {
         this.userService = userService;
+        this.usuarioPerfilPermissaoService = usuarioPerfilPermissaoService;
     }
 
     @Operation(summary = "Realiza login", description = "Autentica usuário e retorna token/sessão")
@@ -32,9 +35,7 @@ public class AuthController {
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         try {
             User user = userService.authenticate(request.getUsername(), request.getPassword());
-            // Gera token JWT simples
             String token = JwtUtil.generateToken(user.getUsername());
-            // Define perfil (ADMIN se username = Admin, senão USER)
             String perfil = "ADMIN";
             if (!"Admin".equalsIgnoreCase(user.getUsername())) {
                 perfil = "USER";
@@ -42,7 +43,10 @@ public class AuthController {
             LoginJwtResponse.UsuarioInfo usuarioInfo = new LoginJwtResponse.UsuarioInfo(
                 user.getId(), user.getNome(), perfil
             );
-            LoginJwtResponse resp = new LoginJwtResponse(token, usuarioInfo);
+            // Busca perfis e permissoes
+            java.util.List<String> perfis = usuarioPerfilPermissaoService.getPerfis(user.getId());
+            java.util.List<String> permissoes = usuarioPerfilPermissaoService.getPermissoes(user.getId());
+            LoginJwtResponse resp = new LoginJwtResponse(token, usuarioInfo, perfis, permissoes);
             return ResponseEntity.ok(resp);
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).body(new ErrorResponse(e.getMessage()));

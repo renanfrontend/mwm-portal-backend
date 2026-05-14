@@ -1,4 +1,13 @@
 #!/usr/bin/env bash
+################################################################################
+# Autor: Antonio Marcos de Souza Santos
+# Cargo: Fullstack Developer
+# Projeto: BioPlantas Backend
+# Data: 2026-05-04
+# -----------------------------------------------------------------------------
+# Este script foi desenvolvido e mantido por Antonio Marcos de Souza Santos
+# (Fullstack Developer) para automação de deploy do ambiente de homologação.
+################################################################################
 set -euo pipefail
 
 # ============================================================================

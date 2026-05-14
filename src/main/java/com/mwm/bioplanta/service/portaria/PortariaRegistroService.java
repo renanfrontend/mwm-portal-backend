@@ -3,10 +3,12 @@ package com.mwm.bioplanta.service.portaria;
 import com.mwm.bioplanta.dto.portaria.PaginationResponseDTO;
 import com.mwm.bioplanta.dto.portaria.PortariaAbastecimentoDTO;
 import com.mwm.bioplanta.dto.portaria.PortariaEntregaDejetosDTO;
+import com.mwm.bioplanta.dto.portaria.PortariaExpedicaoResponseDTO;
 import com.mwm.bioplanta.dto.portaria.PortariaRegistroDTO;
 import com.mwm.bioplanta.model.BioPortariaAbastecimento;
 import com.mwm.bioplanta.model.BioPortariaEntregaDejetos;
 import com.mwm.bioplanta.model.BioPortariaEntregaInsumo;
+import com.mwm.bioplanta.model.BioPortariaExpedicao;
 import com.mwm.bioplanta.model.BioVeiculoTransportadora;
 import com.mwm.bioplanta.model.PortariaRegistro;
 import com.mwm.bioplanta.repository.cadastro.BioTransportadoraRepository;
@@ -14,6 +16,7 @@ import com.mwm.bioplanta.repository.cadastro.BioVeiculoTransportadoraRepository;
 import com.mwm.bioplanta.repository.portaria.BioPortariaAbastecimentoRepository;
 import com.mwm.bioplanta.repository.portaria.BioPortariaEntregaDejetosRepository;
 import com.mwm.bioplanta.repository.portaria.BioPortariaEntregaInsumoRepository;
+import com.mwm.bioplanta.repository.portaria.BioPortariaExpedicaoRepository;
 import com.mwm.bioplanta.repository.portaria.PortariaRegistroRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +59,9 @@ public class PortariaRegistroService {
 
     @Autowired
     private BioPortariaEntregaInsumoRepository entregaInsumoRepository;
+
+    @Autowired
+    private BioPortariaExpedicaoRepository expedicaoRepository;
     
     @Autowired
     private BioVeiculoTransportadoraRepository veiculoRepository;
@@ -165,6 +171,7 @@ public class PortariaRegistroService {
             atualizarDensidadeEntregaDejetos(updated, registroDTO);
             atualizarEntregaInsumo(updated, registroDTO);
             atualizarAbastecimento(updated, registroDTO);
+            atualizarExpedicao(updated, registroDTO);
 
             if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) 
                 && registroDTO.getDataEntrada() != null
@@ -278,6 +285,13 @@ if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaD
                  dto.setEntrega_insumo(criarEntregaInsumoDTO(entregaInsumo, dadosRelacionados.veiculosPorId()));
              }
          }
+
+         if ("EXPEDICAO".equals(registro.getTipoRegistro())) {
+             BioPortariaExpedicao expedicao = dadosRelacionados.expedicoesPorRegistroId().get(registro.getId());
+             if (expedicao != null) {
+                 dto.setExpedicao(criarExpedicaoDTO(expedicao, dadosRelacionados.veiculosPorId()));
+             }
+         }
          
          return dto;
     }
@@ -325,15 +339,32 @@ if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaD
                 .collect(Collectors.toMap(BioPortariaEntregaInsumo::getRegistroId, Function.identity()));
     }
 
+    private Map<Long, BioPortariaExpedicao> carregarExpedicoes(List<PortariaRegistro> registros) {
+        Set<Long> registroIds = registros.stream()
+                .filter(registro -> "EXPEDICAO".equals(registro.getTipoRegistro()))
+                .map(PortariaRegistro::getId)
+                .collect(Collectors.toSet());
+
+        if (registroIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return expedicaoRepository.findByRegistroIdIn(registroIds).stream()
+                .collect(Collectors.toMap(BioPortariaExpedicao::getRegistroId, Function.identity()));
+    }
+
             private Map<Long, BioVeiculoTransportadora> carregarVeiculos(
             Map<Long, BioPortariaAbastecimento> abastecimentosPorRegistroId,
             Map<Long, BioPortariaEntregaDejetos> entregasPorId,
-            Map<Long, BioPortariaEntregaInsumo> entregasInsumoPorRegistroId) {
+            Map<Long, BioPortariaEntregaInsumo> entregasInsumoPorRegistroId,
+            Map<Long, BioPortariaExpedicao> expedicoesPorRegistroId) {
         Set<Long> veiculoIds = java.util.stream.Stream.concat(
                     java.util.stream.Stream.concat(
-                        abastecimentosPorRegistroId.values().stream().map(BioPortariaAbastecimento::getVeiculoId),
-                        entregasPorId.values().stream().map(BioPortariaEntregaDejetos::getVeiculoId)),
-                    entregasInsumoPorRegistroId.values().stream().map(BioPortariaEntregaInsumo::getVeiculoId))
+                        java.util.stream.Stream.concat(
+                            abastecimentosPorRegistroId.values().stream().map(BioPortariaAbastecimento::getVeiculoId),
+                            entregasPorId.values().stream().map(BioPortariaEntregaDejetos::getVeiculoId)),
+                        entregasInsumoPorRegistroId.values().stream().map(BioPortariaEntregaInsumo::getVeiculoId)),
+                    expedicoesPorRegistroId.values().stream().map(BioPortariaExpedicao::getVeiculoId))
                 .filter(java.util.Objects::nonNull)
                 .collect(Collectors.toSet());
 
@@ -576,6 +607,117 @@ if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaD
         }
     }
 
+    private void atualizarExpedicao(PortariaRegistro registro, PortariaRegistroDTO registroDTO) {
+        log.info("EXPEDICAO check - tipo: {}, expedicaoId: {}, expedicao: {}",
+                registro.getTipoRegistro(), registro.getExpedicaoId(), registroDTO.getExpedicao());
+
+        if (!"EXPEDICAO".equals(registro.getTipoRegistro())
+                || registroDTO.getExpedicao() == null) {
+            return;
+        }
+
+        Long expedicaoId = registro.getExpedicaoId();
+        if (expedicaoId == null) {
+            expedicaoId = expedicaoRepository.findByRegistroId(registro.getId())
+                    .map(BioPortariaExpedicao::getId)
+                    .orElse(null);
+        }
+
+        if (expedicaoId == null) {
+            log.info("Expedição não encontrada para registro ID: {}", registro.getId());
+            return;
+        }
+
+        var expedicao = expedicaoRepository.findById(expedicaoId).orElse(null);
+        if (expedicao == null) {
+            return;
+        }
+
+        var dto = registroDTO.getExpedicao();
+        boolean alterou = false;
+
+        if (registroDTO.getDataEntrada() != null) {
+            expedicao.setDataEntrada(LocalDate.parse(registroDTO.getDataEntrada()));
+            alterou = true;
+        }
+        if (registroDTO.getHoraEntrada() != null) {
+            expedicao.setHorarioEntrada(LocalTime.parse(registroDTO.getHoraEntrada()));
+            alterou = true;
+        }
+        if (registroDTO.getDataSaida() != null) {
+            expedicao.setDataSaida(LocalDate.parse(registroDTO.getDataSaida()));
+            alterou = true;
+        }
+        if (registroDTO.getHoraSaida() != null) {
+            expedicao.setHorarioSaida(LocalTime.parse(registroDTO.getHoraSaida()));
+            alterou = true;
+        }
+        if (registroDTO.getObservacoes() != null) {
+            expedicao.setObservacao(registroDTO.getObservacoes());
+            alterou = true;
+        }
+
+        if (dto.getMotorista() != null) {
+            expedicao.setMotorista(dto.getMotorista());
+            alterou = true;
+        }
+        if (dto.getCpfPassaporte() != null) {
+            expedicao.setCpfPassaporte(dto.getCpfPassaporte());
+            alterou = true;
+        }
+        if (dto.getTipoVeiculo() != null) {
+            expedicao.setTipoVeiculo(dto.getTipoVeiculo());
+            alterou = true;
+        }
+        if (dto.getNotaFiscal() != null) {
+            expedicao.setNotaFiscal(dto.getNotaFiscal());
+            alterou = true;
+        }
+        if (dto.getPesoInicial() != null) {
+            expedicao.setPesoInicial(dto.getPesoInicial());
+            alterou = true;
+        }
+        if (dto.getPesoFinal() != null) {
+            expedicao.setPesoFinal(dto.getPesoFinal());
+            alterou = true;
+        }
+
+        if (dto.getTransportadoraId() != null) {
+            expedicao.setTransportadoraId(dto.getTransportadoraId());
+            expedicao.setTransportadoraManual(null);
+            alterou = true;
+        } else if (dto.getTransportadoraManual() != null && !dto.getTransportadoraManual().isBlank()) {
+            expedicao.setTransportadoraId(null);
+            expedicao.setTransportadoraManual(dto.getTransportadoraManual());
+            alterou = true;
+        }
+
+        if (dto.getVeiculoId() != null) {
+            expedicao.setVeiculoId(dto.getVeiculoId());
+            alterou = true;
+        } else if (dto.getTransportadoraManual() != null && !dto.getTransportadoraManual().isBlank()) {
+            expedicao.setVeiculoId(null);
+            alterou = true;
+        }
+
+        if (dto.getPlaca() != null) {
+            expedicao.setPlaca(dto.getPlaca());
+            alterou = true;
+        } else if (dto.getVeiculoId() != null) {
+            var veiculo = veiculoRepository.findById(dto.getVeiculoId()).orElse(null);
+            if (veiculo != null && veiculo.getPlaca() != null) {
+                expedicao.setPlaca(veiculo.getPlaca());
+                alterou = true;
+            }
+        }
+
+        if (alterou) {
+            expedicao.setAtualizadoEm(LocalDateTime.now());
+            expedicaoRepository.save(expedicao);
+            expedicaoRepository.flush();
+        }
+    }
+
     private Double toDouble(Object value) {
         if (value == null) return null;
         if (value instanceof Number) return ((Number) value).doubleValue();
@@ -590,8 +732,18 @@ if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaD
         Map<Long, BioPortariaAbastecimento> abastecimentosPorRegistroId = carregarAbastecimentos(registros);
         Map<Long, BioPortariaEntregaDejetos> entregasPorId = carregarEntregas(registros);
         Map<Long, BioPortariaEntregaInsumo> entregasInsumoPorRegistroId = carregarEntregasInsumo(registros);
-        Map<Long, BioVeiculoTransportadora> veiculosPorId = carregarVeiculos(abastecimentosPorRegistroId, entregasPorId, entregasInsumoPorRegistroId);
-        return new DadosRelacionadosPortaria(abastecimentosPorRegistroId, entregasPorId, entregasInsumoPorRegistroId, veiculosPorId);
+        Map<Long, BioPortariaExpedicao> expedicoesPorRegistroId = carregarExpedicoes(registros);
+        Map<Long, BioVeiculoTransportadora> veiculosPorId = carregarVeiculos(
+            abastecimentosPorRegistroId,
+            entregasPorId,
+            entregasInsumoPorRegistroId,
+            expedicoesPorRegistroId);
+        return new DadosRelacionadosPortaria(
+            abastecimentosPorRegistroId,
+            entregasPorId,
+            entregasInsumoPorRegistroId,
+            expedicoesPorRegistroId,
+            veiculosPorId);
     }
 
     private PortariaAbastecimentoDTO criarAbastecimentoDTO(
@@ -702,10 +854,48 @@ if ("ENTREGA_DEJETOS".equals(registro.getTipoRegistro()) && registro.getEntregaD
         return entregaDTO;
     }
 
+    private PortariaExpedicaoResponseDTO criarExpedicaoDTO(
+            BioPortariaExpedicao expedicao,
+            Map<Long, BioVeiculoTransportadora> veiculosPorId) {
+        PortariaExpedicaoResponseDTO expedicaoDTO = new PortariaExpedicaoResponseDTO();
+        expedicaoDTO.setId(expedicao.getId());
+        expedicaoDTO.setRegistroId(expedicao.getRegistroId());
+        expedicaoDTO.setTransportadoraId(expedicao.getTransportadoraId());
+        expedicaoDTO.setVeiculoId(expedicao.getVeiculoId());
+        expedicaoDTO.setUsuarioId(expedicao.getUsuarioId());
+        expedicaoDTO.setDataEntrada(expedicao.getDataEntrada() != null ? expedicao.getDataEntrada().toString() : null);
+        expedicaoDTO.setHorarioEntrada(expedicao.getHorarioEntrada() != null ? expedicao.getHorarioEntrada().toString() : null);
+        expedicaoDTO.setAtividade(expedicao.getAtividade());
+        expedicaoDTO.setTransportadoraManual(expedicao.getTransportadoraManual());
+        expedicaoDTO.setTipoVeiculo(expedicao.getTipoVeiculo());
+        expedicaoDTO.setMotorista(expedicao.getMotorista());
+        expedicaoDTO.setCpfPassaporte(expedicao.getCpfPassaporte());
+        expedicaoDTO.setNotaFiscal(expedicao.getNotaFiscal());
+        expedicaoDTO.setPesoInicial(expedicao.getPesoInicial());
+        expedicaoDTO.setPesoFinal(expedicao.getPesoFinal());
+        expedicaoDTO.setDataSaida(expedicao.getDataSaida() != null ? expedicao.getDataSaida().toString() : null);
+        expedicaoDTO.setHorarioSaida(expedicao.getHorarioSaida() != null ? expedicao.getHorarioSaida().toString() : null);
+        expedicaoDTO.setObservacao(expedicao.getObservacao());
+        expedicaoDTO.setCriadoEm(expedicao.getCriadoEm() != null ? expedicao.getCriadoEm().toString() : null);
+        expedicaoDTO.setAtualizadoEm(expedicao.getAtualizadoEm() != null ? expedicao.getAtualizadoEm().toString() : null);
+
+        if (expedicao.getPlaca() != null && !expedicao.getPlaca().isBlank()) {
+            expedicaoDTO.setPlaca(expedicao.getPlaca());
+        } else if (expedicao.getVeiculoId() != null) {
+            BioVeiculoTransportadora veiculo = veiculosPorId.get(expedicao.getVeiculoId());
+            if (veiculo != null) {
+                expedicaoDTO.setPlaca(veiculo.getPlaca());
+            }
+        }
+
+        return expedicaoDTO;
+    }
+
     private record DadosRelacionadosPortaria(
             Map<Long, BioPortariaAbastecimento> abastecimentosPorRegistroId,
             Map<Long, BioPortariaEntregaDejetos> entregasPorId,
             Map<Long, BioPortariaEntregaInsumo> entregasInsumoPorRegistroId,
+            Map<Long, BioPortariaExpedicao> expedicoesPorRegistroId,
             Map<Long, BioVeiculoTransportadora> veiculosPorId) {
     }
 }
